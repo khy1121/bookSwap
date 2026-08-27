@@ -31,7 +31,7 @@ export default async function ListingPage(props: PageProps<"/listings/[id]">) {
               key={src}
               src={src}
               alt={`실물 사진 ${i + 1}`}
-              className="h-64 w-[85%] shrink-0 snap-center rounded-lg object-cover"
+              className="anim-fade-up h-64 w-[85%] shrink-0 snap-center rounded-xl object-cover"
             />
           ))}
         </div>
@@ -44,7 +44,7 @@ export default async function ListingPage(props: PageProps<"/listings/[id]">) {
       <section className="px-4 pt-5 pb-4">
         <div className="flex items-center gap-2 text-[12px]">
           <span className={`font-bold ${KIND_COLOR[l.kind]}`}>{ROLE_LABEL[l.kind]}의 {KIND_LABEL[l.kind]}</span>
-          {done && <span className="rounded bg-surface px-1.5 py-0.5 text-gray-2">거래 완료</span>}
+          {done && <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-semibold text-gray-2">거래 완료</span>}
         </div>
         <h1 className="mt-2 text-[22px] font-bold leading-tight tracking-tight">
           {l.book_title}
@@ -52,7 +52,7 @@ export default async function ListingPage(props: PageProps<"/listings/[id]">) {
         </h1>
         <p className="mt-2 text-[24px] font-bold tabular-nums">{won(l.price)}</p>
         {l.course_id && (
-          <Link href={`/courses/${l.course_id}`} className="mt-2 inline-block text-[13px] text-action">
+          <Link href={`/courses/${l.course_id}`} className="press mt-2 inline-flex items-center gap-1 rounded-full text-[13px] text-action">
             {l.course} · {l.prof} 교수 →
           </Link>
         )}
@@ -77,7 +77,7 @@ export default async function ListingPage(props: PageProps<"/listings/[id]">) {
         </dl>
 
         {l.course_book && (
-          <div className="mt-2 rounded-lg bg-surface-soft p-4">
+          <div className="mt-2 rounded-xl bg-surface-soft p-4">
             <div className="text-[11px] font-semibold tracking-wide text-navy">교수 지정 주교재 (공식)</div>
             <p className="mt-1 whitespace-pre-line text-[13px] leading-relaxed text-gray-1">{l.course_book}</p>
             <p className="mt-2 text-[11px] text-gray-3">판본이 다를 수 있으니 {ROLE_LABEL[l.kind]}에게 확인하세요.</p>
@@ -87,7 +87,7 @@ export default async function ListingPage(props: PageProps<"/listings/[id]">) {
 
       {isOwner && (
         <div className="px-4 py-2">
-          <OwnerActions listingId={l.id} status={l.status} />
+          <OwnerActions listingId={l.id} status={l.status} title={l.book_title} />
         </div>
       )}
 

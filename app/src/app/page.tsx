@@ -5,6 +5,7 @@ import type { Course, ListingPublic } from "@/lib/types";
 import { KIND_COLOR, KIND_LABEL, firstLine, won } from "@/lib/types";
 import { Cover } from "@/components/Cover";
 import { flattenMajors, loadMajorTree } from "@/lib/majors";
+import { SearchBox } from "@/components/SearchBox";
 
 export default async function Home(props: PageProps<"/">) {
   const { q = "" } = await props.searchParams;
@@ -54,17 +55,10 @@ export default async function Home(props: PageProps<"/">) {
           <span className="text-blue">수업 기준</span>으로 찾으세요
         </h1>
         <p className="mt-2 text-[13px] text-gray-2">과목명·교수명·책 제목 중 아무거나</p>
-        <form className="mt-4 flex h-12 overflow-hidden rounded-lg border border-line bg-surface" action="/">
-          <input
-            name="q"
-            defaultValue={query}
-            placeholder="예) 객체지향언어2"
-            className="min-w-0 flex-1 bg-transparent px-4 text-[15px] outline-none placeholder:text-gray-3"
-            autoFocus
-          />
-          <button className="px-5 text-[14px] font-semibold text-white bg-navy">검색</button>
-        </form>
-        <Link href="/browse" className="mt-3 inline-flex items-center gap-1 text-[13px] font-medium text-action">
+        <div className="mt-4">
+          <SearchBox defaultValue={query} />
+        </div>
+        <Link href="/browse" className="press mt-3 inline-flex items-center gap-1 rounded-full text-[13px] font-medium text-action">
           학과·트랙으로 찾기 →
         </Link>
       </section>
@@ -74,7 +68,7 @@ export default async function Home(props: PageProps<"/">) {
           <h2 className="px-4 pt-5 pb-2 text-[15px] font-bold">
             학과·트랙 <span className="text-blue">{majorHits.length}</span>
           </h2>
-          <ul className="flex flex-wrap gap-1.5 px-4 pb-4">
+          <ul className="stagger flex flex-wrap gap-1.5 px-4 pb-4">
             {majorHits.map((m) => (
               <li key={m.code}>
                 <Link href={`/browse/${m.code}`}
@@ -102,7 +96,7 @@ export default async function Home(props: PageProps<"/">) {
               하세요.
             </p>
           )}
-          <ul>
+          <ul className="stagger">
             {[...grouped.entries()].map(([name, list]) => (
               <li key={name} className="flex gap-3 border-b border-line px-4 py-3">
                 <Cover src={list.find((c) => c.cover_url)?.cover_url} alt="" size="md" className="mt-0.5" />
@@ -134,12 +128,16 @@ export default async function Home(props: PageProps<"/">) {
       <section className="border-t-8 border-surface">
         <h2 className="px-4 pt-5 pb-2 text-[15px] font-bold">최근 올라온 거래</h2>
         {listings.length === 0 && (
-          <p className="px-4 pb-6 text-[13px] text-gray-2">아직 없습니다. 수업을 검색해서 첫 거래를 올려보세요.</p>
+          <div className="mx-4 mb-6 rounded-xl border border-dashed border-line p-5 text-center">
+            <p className="text-[14px] font-medium">아직 올라온 거래가 없습니다</p>
+            <p className="mt-1 text-[12px] text-gray-2">수업을 검색해서 첫 판매·구매를 올려보세요.</p>
+            <Link href="/browse" className="press mt-3 inline-flex h-9 items-center rounded-full bg-navy px-4 text-[13px] font-semibold text-white">학과에서 수업 찾기</Link>
+          </div>
         )}
-        <ul>
+        <ul className="stagger">
           {listings.map((l) => (
             <li key={l.id} className="border-b border-line">
-              <Link href={`/listings/${l.id}`} className="flex items-center gap-3 px-4 py-3">
+              <Link href={`/listings/${l.id}`} className="row flex items-center gap-3 px-4 py-3">
                 <Cover src={l.photos?.[0] ?? l.cover_url} alt="" size="sm" />
                 <span className="min-w-0 flex-1">
                   <span className={`block text-[11px] font-bold ${KIND_COLOR[l.kind]}`}>{KIND_LABEL[l.kind]}</span>
@@ -152,6 +150,7 @@ export default async function Home(props: PageProps<"/">) {
                   </span>
                 </span>
                 <span className="shrink-0 text-[14px] font-semibold tabular-nums">{won(l.price)}</span>
+                <span aria-hidden className="text-gray-3">›</span>
               </Link>
             </li>
           ))}

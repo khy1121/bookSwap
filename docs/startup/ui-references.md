@@ -28,3 +28,13 @@
 - 서체: Pretendard Variable (한성대 홈페이지 동일), 과목 코드 라벨만 mono
 - 시그니처: 수강편람 시간표 셀을 닮은 `.course-code` 라벨 (왼쪽 블루 바 + 소프트 블루 배경)
 - 등록 폼: 구매/판매 토글 → 교재명·판본·가격·연락처 (+판매 시 상태). 구매일 땐 상태 필드 숨김
+
+## 인터랙션 적용 (2026-08-27 밤, PR #6)
+- 토스트: 서버 액션 redirect `?toast=created|updated|deleted|done|login` → `components/Toast.tsx`가 한 번 띄우고 URL에서 제거. 표시/닫기 effect 분리(URL 변경으로 타이머가 취소되던 버그 수정)
+- 바텀시트 확인창 `ConfirmSheet` (body 포털, Esc/배경 닫기) — 삭제·거래완료. 브라우저 confirm() 미사용
+- 내 거래 액션: 수정(아웃라인) · 거래 완료(네이비) · 삭제(연한 빨강) 버튼 3등분
+- 연락처 공개: 펼침 애니메이션 + 복사 버튼("복사됨 ✓") + 오픈채팅 열기 CTA
+- 검색창: 지우기(×), 제출 중 스피너, 포커스 링
+- 라우트별 스켈레톤 `loading.tsx` (홈·과목·학과)
+- 공통: `.press`(눌림 0.98 배), `.row`(hover 소프트 블루), `.stagger`(목록 순차 등장), 하단 바 safe-area, reduced-motion 시 전부 꺼짐
+- 빈 상태: 점선 카드 + 다음 행동 버튼

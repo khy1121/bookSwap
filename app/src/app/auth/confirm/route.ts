@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
   if (ok) {
     await track("login_success");
     to.pathname = next;
+    to.searchParams.set("toast", "login");
     return NextResponse.redirect(to);
   }
   to.pathname = "/login";

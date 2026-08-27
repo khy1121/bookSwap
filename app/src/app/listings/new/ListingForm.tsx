@@ -38,7 +38,7 @@ export function ListingForm({
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
-  const field = "mt-1.5 h-12 w-full rounded-lg border border-line bg-white px-3 text-[15px] outline-none focus:border-action";
+  const field = "mt-1.5 h-12 w-full rounded-xl border border-line bg-white px-3 text-[15px] outline-none transition-[border-color,box-shadow] focus:border-action focus:shadow-[0_0_0_3px_rgba(0,100,239,0.12)]";
   const label = "block text-[13px] font-medium text-gray-1";
   const total = kept.length + photos.length;
 
@@ -70,7 +70,7 @@ export function ListingForm({
   }
 
   const thumb = (src: string, onRemove: () => void, key: string) => (
-    <div key={key} className="relative h-20 w-20 overflow-hidden rounded-lg border border-line">
+    <div key={key} className="anim-fade-up relative h-20 w-20 overflow-hidden rounded-xl border border-line">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt="" className="h-full w-full object-cover" />
       <button type="button" onClick={onRemove} aria-label="사진 삭제"
@@ -86,7 +86,7 @@ export function ListingForm({
       <div className="grid grid-cols-2 gap-2">
         {(["buy", "sell"] as const).map((k) => (
           <button type="button" key={k} onClick={() => setKind(k)}
-            className={`h-11 rounded-lg border text-[14px] font-bold ${
+            className={`press h-11 rounded-xl border text-[14px] font-bold ${
               kind === k ? `${KIND_BG[k]} border-transparent text-white` : "border-line bg-white text-gray-2"
             }`}>
             {KIND_LABEL[k]}
@@ -105,7 +105,7 @@ export function ListingForm({
               {photos.map((p, i) => thumb(p.url, () => removeNew(i), p.url))}
               {total < MAX_PHOTOS && (
                 <button type="button" onClick={() => fileInput.current?.click()}
-                  className="flex h-20 w-20 flex-col items-center justify-center rounded-lg border border-dashed border-line text-gray-3">
+                  className="press flex h-20 w-20 flex-col items-center justify-center rounded-xl border border-dashed border-line text-gray-3 hover:border-action hover:text-action">
                   <span className="text-xl leading-none">+</span>
                   <span className="mt-1 text-[11px]">{total}/{MAX_PHOTOS}</span>
                 </button>
@@ -159,7 +159,7 @@ export function ListingForm({
 
       {state.error && <p className="mt-3 text-[13px] text-red-600">{state.error}</p>}
       <button disabled={pending}
-        className={`mt-6 h-12 w-full rounded-lg text-[15px] font-bold text-white disabled:opacity-60 ${KIND_BG[kind]}`}>
+        className={`press mt-6 h-12 w-full rounded-xl text-[15px] font-bold text-white disabled:opacity-60 ${KIND_BG[kind]}`}>
         {pending ? (initial ? "저장 중…" : "올리는 중…") : initial ? "저장" : `${KIND_LABEL[kind]} 올리기`}
       </button>
     </form>

@@ -24,16 +24,18 @@ export default async function MyPage() {
         <p className="mt-1 text-[12px] text-gray-3">{user.email}</p>
       </section>
       {list.length === 0 && (
-        <p className="px-4 py-6 text-[13px] text-gray-2">
-          올린 거래가 없습니다. <Link href="/" className="text-action underline">수업을 검색</Link>해서 시작하세요.
-        </p>
+        <div className="mx-4 my-6 rounded-xl border border-dashed border-line p-5 text-center">
+          <p className="text-[14px] font-medium">올린 거래가 없습니다</p>
+          <p className="mt-1 text-[12px] text-gray-2">수업을 찾아 판매나 구매를 올리면 여기에 모입니다.</p>
+          <Link href="/" className="press mt-3 inline-flex h-9 items-center rounded-full bg-navy px-4 text-[13px] font-semibold text-white">수업 검색</Link>
+        </div>
       )}
-      <ul className="border-t border-line">
+      <ul className="stagger border-t border-line">
         {list.map((l) => {
           const done = l.status === "done";
           return (
             <li key={l.id} className="border-b border-line px-4 py-3">
-              <Link href={`/listings/${l.id}`} className="flex items-center gap-3">
+              <Link href={`/listings/${l.id}`} className="row -mx-2 flex items-center gap-3 rounded-lg px-2 py-1">
                 <Cover src={l.photos?.[0] ?? l.cover_url} alt="" size="sm" />
                 <span className={`min-w-0 flex-1 ${done ? "text-gray-3" : ""}`}>
                   <span className={`block text-[11px] font-bold ${done ? "text-gray-3" : KIND_COLOR[l.kind]}`}>
@@ -45,7 +47,7 @@ export default async function MyPage() {
                 <span className="shrink-0 text-[14px] font-semibold tabular-nums">{won(l.price)}</span>
               </Link>
               <div className="mt-2 pl-[52px]">
-                <OwnerActions listingId={l.id} status={l.status} compact />
+                <OwnerActions listingId={l.id} status={l.status} title={l.book_title} />
               </div>
             </li>
           );

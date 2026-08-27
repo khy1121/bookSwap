@@ -26,10 +26,10 @@ export function LoginForm({ next, referral }: { next: string; referral: string }
         required
         autoFocus
         placeholder="학번@hansung.ac.kr"
-        className="h-12 w-full rounded-lg border border-line bg-white px-3 text-[15px] outline-none focus:border-action"
+        className="h-12 w-full rounded-xl border border-line bg-white px-3 text-[15px] outline-none transition-[border-color,box-shadow] focus:border-action focus:shadow-[0_0_0_3px_rgba(0,100,239,0.12)]"
       />
       {state.error && <p className="text-[13px] text-red-600">{state.error}</p>}
-      <button disabled={pending} className="h-12 w-full rounded-lg bg-blue text-[15px] font-bold text-white disabled:opacity-60">
+      <button disabled={pending} className="press h-12 w-full rounded-xl bg-blue text-[15px] font-bold text-white disabled:opacity-60">
         {pending ? "보내는 중…" : "로그인 링크 받기"}
       </button>
     </form>

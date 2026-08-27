@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { getUser } from "@/lib/supabase/server";
 import { signOut } from "./actions";
+import { Toast } from "@/components/Toast";
 
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
@@ -15,25 +17,27 @@ export const viewport: Viewport = { themeColor: "#0a4da1", width: "device-width"
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const user = await getUser();
+  const nav = "press rounded-full px-2.5 py-1 hover:bg-surface hover:text-ink";
   return (
     <html lang="ko" className={`${geistMono.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-surface">
         <header className="sticky top-0 z-20 border-b border-line bg-white/95 backdrop-blur">
-          <nav className="mx-auto flex h-14 max-w-md items-center justify-between px-4">
-            <Link href="/" className="flex items-baseline gap-1.5">
+          <nav className="mx-auto flex h-14 max-w-md items-center justify-between px-3">
+            <Link href="/" className="press flex items-baseline gap-1.5 rounded-full px-1.5 py-1">
               <span className="text-lg font-extrabold tracking-tight text-navy">북스왑</span>
               <span className="text-[11px] font-semibold tracking-wider text-sky">HANSUNG</span>
             </Link>
-            <div className="flex items-center gap-4 text-[13px] font-medium text-gray-2">
+            <div className="flex items-center gap-0.5 text-[13px] font-medium text-gray-2">
+              <Link href="/browse" className={nav}>학과</Link>
               {user ? (
                 <>
-                  <Link href="/my" className="hover:text-ink">내 거래</Link>
+                  <Link href="/my" className={nav}>내 거래</Link>
                   <form action={signOut}>
-                    <button className="hover:text-ink">로그아웃</button>
+                    <button className={nav}>로그아웃</button>
                   </form>
                 </>
               ) : (
-                <Link href="/login" className="hover:text-ink">로그인</Link>
+                <Link href="/login" className={nav}>로그인</Link>
               )}
             </div>
           </nav>
@@ -49,6 +53,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             으로 알려주세요.
           </p>
         </footer>
+        <Suspense fallback={null}>
+          <Toast />
+        </Suspense>
       </body>
     </html>
   );

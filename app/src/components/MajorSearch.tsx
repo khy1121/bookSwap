@@ -25,15 +25,15 @@ export function MajorSearch({ items }: { items: MajorItem[] }) {
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="학과·트랙 이름 검색 (예: 컴퓨터, 패션, 웹공학)"
-        className="h-12 w-full rounded-lg border border-line bg-surface px-4 text-[15px] outline-none focus:border-action placeholder:text-gray-3"
+        className="h-12 w-full rounded-xl border border-line bg-surface px-4 text-[15px] outline-none transition-[border-color,box-shadow] focus:border-action focus:shadow-[0_0_0_3px_rgba(0,100,239,0.12)] placeholder:text-gray-3"
         aria-label="학과·트랙 검색"
       />
       {q.trim() && (
-        <ul className="mt-2 divide-y divide-line rounded-lg border border-line bg-white">
+        <ul className="anim-fade-up mt-2 divide-y divide-line overflow-hidden rounded-xl border border-line bg-white">
           {hits.length === 0 && <li className="px-4 py-3 text-[13px] text-gray-2">해당하는 학과·트랙이 없습니다.</li>}
           {hits.map((m) => (
             <li key={m.code}>
-              <Link href={`/browse/${m.code}`} className="flex items-center justify-between px-4 py-3 hover:bg-surface-soft">
+              <Link href={`/browse/${m.code}`} className="row flex items-center justify-between px-4 py-3">
                 <span className="min-w-0">
                   <span className="block truncate text-[14px] font-medium">{m.name}</span>
                   <span className="block text-[11px] text-gray-3">

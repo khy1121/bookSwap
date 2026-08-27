@@ -15,7 +15,7 @@ function Rows({ title, list, empty }: { title: string; list: ListingPublic[]; em
       <ul>
         {list.map((l) => (
           <li key={l.id} className="border-b border-line">
-            <Link href={`/listings/${l.id}`} className="flex items-center gap-3 px-4 py-3">
+            <Link href={`/listings/${l.id}`} className="row flex items-center gap-3 px-4 py-3">
               {l.photos?.length > 0 && <Cover src={l.photos[0]} alt="" size="sm" />}
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[14px] font-medium">
@@ -27,6 +27,7 @@ function Rows({ title, list, empty }: { title: string; list: ListingPublic[]; em
                 </span>
               </span>
               <span className="shrink-0 text-[14px] font-semibold tabular-nums">{won(l.price)}</span>
+              <span aria-hidden className="text-gray-3">›</span>
             </Link>
           </li>
         ))}
@@ -67,7 +68,7 @@ export default async function CoursePage(props: PageProps<"/courses/[id]">) {
           {course.bunban ? ` · ${course.bunban}분반` : ""} · 2026-2
         </p>
 
-        <div className="mt-4 flex gap-4 rounded-lg bg-surface-soft p-4">
+        <div className="anim-fade-up mt-4 flex gap-4 rounded-xl bg-surface-soft p-4">
           <Cover src={course.cover_url} alt={firstLine(course.book) || "교재"} size="lg" />
           <div className="min-w-0 flex-1">
             <div className="text-[11px] font-semibold tracking-wide text-navy">교수 지정 주교재</div>
@@ -80,7 +81,7 @@ export default async function CoursePage(props: PageProps<"/courses/[id]">) {
           </div>
         </div>
 
-        <dl className="mt-4 grid grid-cols-2 divide-x divide-line rounded-lg border border-line text-center">
+        <dl className="mt-4 grid grid-cols-2 divide-x divide-line overflow-hidden rounded-xl border border-line text-center">
           <div className="py-3">
             <dt className="text-[11px] text-gray-3">즉시 구매가 (최저 판매)</dt>
             <dd className="mt-0.5 text-[17px] font-bold tabular-nums text-blue">{lowestAsk != null ? won(lowestAsk) : "—"}</dd>
@@ -96,11 +97,11 @@ export default async function CoursePage(props: PageProps<"/courses/[id]">) {
       <Rows title="구매 희망" list={buys} empty="아직 구매자가 없습니다. 이 책이 필요하면 구매를 올려보세요." />
 
       {/* 하단 고정 이중 CTA — KREAM 구매/판매 */}
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-md gap-2 px-4 py-3">
+      <div className="bottom-bar anim-fade-up fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-md gap-2 px-4 pt-3">
           <Link
             href={`/listings/new?course=${course.id}&kind=buy`}
-            className="flex flex-1 items-center justify-between rounded-lg bg-blue px-4 py-3 text-white"
+            className="press flex flex-1 items-center justify-between rounded-xl bg-blue px-4 py-3 text-white"
           >
             <span className="text-[15px] font-bold">{KIND_LABEL.buy}</span>
             <span className="text-right leading-tight">
@@ -110,7 +111,7 @@ export default async function CoursePage(props: PageProps<"/courses/[id]">) {
           </Link>
           <Link
             href={`/listings/new?course=${course.id}&kind=sell`}
-            className="flex flex-1 items-center justify-between rounded-lg bg-sky px-4 py-3 text-white"
+            className="press flex flex-1 items-center justify-between rounded-xl bg-sky px-4 py-3 text-white"
           >
             <span className="text-[15px] font-bold">{KIND_LABEL.sell}</span>
             <span className="text-right leading-tight">

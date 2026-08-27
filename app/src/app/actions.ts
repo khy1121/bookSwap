@@ -100,7 +100,7 @@ export async function createListing(_prev: ActionState, form: FormData): Promise
 
   await track("listing_created", { kind: fields.kind, course_id: fields.course_id, has_price: fields.price != null, photos: photos.length });
   revalidatePath("/");
-  redirect(`/listings/${data.id}`);
+  redirect(`/listings/${data.id}?toast=created`);
 }
 
 /** 본인 매물 수정. 기존 사진은 keep_photos(JSON 배열)로 유지 목록을 받고, 새 사진은 photos로 추가한다. */
@@ -132,7 +132,7 @@ export async function updateListing(listingId: string, _prev: ActionState, form:
   revalidatePath("/");
   revalidatePath("/my");
   revalidatePath(`/listings/${listingId}`);
-  redirect(`/listings/${listingId}`);
+  redirect(`/listings/${listingId}?toast=updated`);
 }
 
 /** 본인 매물 삭제. 사진 파일도 함께 지운다(실패해도 삭제는 진행). */
@@ -155,7 +155,7 @@ export async function deleteListing(listingId: string) {
   revalidatePath("/");
   revalidatePath("/my");
   if (own.course_id) revalidatePath(`/courses/${own.course_id}`);
-  redirect("/my");
+  redirect("/my?toast=deleted");
 }
 
 /** 활성화 이벤트: 로그인한 사용자가 판매자/구매자 연락처를 연다. */
@@ -175,6 +175,8 @@ export async function markDone(listingId: string) {
   const supabase = await createClient();
   await supabase.from("listings").update({ status: "done" }).eq("id", listingId).eq("user_id", user.id);
   await track("listing_done", { listing_id: listingId });
+  revalidatePath("/");
   revalidatePath(`/listings/${listingId}`);
   revalidatePath("/my");
+  redirect(`/listings/${listingId}?toast=done`);
 }
