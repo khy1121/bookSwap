@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <div className="anim-fade-up px-4 py-16 text-center">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-soft text-[26px]">📭</div>
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-soft text-navy"><span aria-hidden className="icon-[lucide--package-x] size-7" /></div>
       <h1 className="mt-4 text-[18px] font-bold">페이지를 찾을 수 없습니다</h1>
       <p className="mt-2 text-[13px] leading-relaxed text-gray-2">삭제된 거래이거나 주소가 잘못되었습니다.</p>
       <div className="mt-6 flex justify-center gap-2">

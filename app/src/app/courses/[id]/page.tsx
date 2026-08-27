@@ -28,7 +28,7 @@ function Rows({ title, list, empty }: { title: string; list: ListingPublic[]; em
                 </span>
               </span>
               <span className="shrink-0 text-[14px] font-semibold tabular-nums">{won(l.price)}</span>
-              <span aria-hidden className="text-gray-3">›</span>
+              <span aria-hidden className="icon-[lucide--chevron-right] size-4 text-gray-3" />
             </Link>
           </li>
         ))}

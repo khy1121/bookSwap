@@ -51,11 +51,11 @@ export function BrowseTabs({ groups }: { groups: Record<TabKey, BrowseItem[]> })
             aria-label="학과·트랙 검색"
             className="h-12 w-full rounded-xl border border-line bg-surface pl-10 pr-10 text-[15px] outline-none transition-[border-color,box-shadow] placeholder:text-gray-3 focus:border-action focus:shadow-[0_0_0_3px_rgba(0,100,239,0.12)]"
           />
-          <span aria-hidden className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-3">⌕</span>
+          <span aria-hidden className="icon-[lucide--search] pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-gray-3" />
           {q && (
             <button type="button" aria-label="지우기" onClick={() => setQ("")}
               className="press absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-2 text-gray-3 hover:text-ink">
-              <span className="inline-block h-5 w-5 rounded-full bg-line text-center text-[12px] leading-5">×</span>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-line"><span aria-hidden className="icon-[lucide--x] size-3" /></span>
             </button>
           )}
         </div>
@@ -92,7 +92,7 @@ export function BrowseTabs({ groups }: { groups: Record<TabKey, BrowseItem[]> })
               return (
                 <li key={m.code} className="border-b border-line last:border-0">
                   <Link href={`/browse/${m.code}`} className="row flex items-center gap-3 px-4 py-3">
-                    <span aria-hidden className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[18px] ${ic.bg}`}>{ic.icon}</span>
+                    <span aria-hidden className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${ic.bg} ${ic.fg}`}><span className={`${ic.icon} size-5`} /></span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[15px] font-medium">{m.name}</span>
                       <span className="block text-[12px] text-gray-3">
@@ -101,7 +101,7 @@ export function BrowseTabs({ groups }: { groups: Record<TabKey, BrowseItem[]> })
                         {m.tracks ? ` · 트랙 ${m.tracks}` : ""}
                       </span>
                     </span>
-                    <span aria-hidden className="text-gray-3">›</span>
+                    <span aria-hidden className="icon-[lucide--chevron-right] size-4 text-gray-3" />
                   </Link>
                 </li>
               );

@@ -7,7 +7,7 @@ function Submit() {
   const { pending } = useFormStatus();
   return (
     <button className="press flex w-[72px] items-center justify-center bg-navy text-[14px] font-semibold text-white" disabled={pending} aria-label="검색">
-      {pending ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : "검색"}
+      {pending ? <span aria-hidden className="icon-[lucide--loader-circle] size-5 animate-spin" /> : <span aria-hidden className="icon-[lucide--search] size-5" />}
     </button>
   );
 }
@@ -25,7 +25,7 @@ export function SearchBox({ defaultValue = "" }: { defaultValue?: string }) {
       {v && (
         <button type="button" aria-label="지우기" onClick={() => { setV(""); ref.current?.focus(); }}
           className="press px-2 text-gray-3 hover:text-ink">
-          <span className="inline-block h-5 w-5 rounded-full bg-line text-center text-[12px] leading-5">×</span>
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-line"><span aria-hidden className="icon-[lucide--x] size-3" /></span>
         </button>
       )}
       <Submit />

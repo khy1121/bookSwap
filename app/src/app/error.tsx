@@ -15,7 +15,7 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
 
   return (
     <div className="anim-fade-up px-4 py-16 text-center">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-soft text-[26px]">⚠️</div>
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fff4e5] text-[#b45309]"><span aria-hidden className="icon-[lucide--triangle-alert] size-7" /></div>
       <h1 className="mt-4 text-[18px] font-bold">문제가 생겼습니다</h1>
       <p className="mt-2 text-[13px] leading-relaxed text-gray-2">{friendly}</p>
       {error.digest && <p className="mt-1 text-[11px] text-gray-3">오류 코드 {error.digest}</p>}

@@ -74,7 +74,7 @@ export function ListingForm({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt="" className="h-full w-full object-cover" />
       <button type="button" onClick={onRemove} aria-label="사진 삭제"
-        className="absolute right-1 top-1 h-5 w-5 rounded-full bg-black/60 text-[11px] leading-5 text-white">×</button>
+        className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white"><span aria-hidden className="icon-[lucide--x] size-3" /></button>
     </div>
   );
 
@@ -106,7 +106,7 @@ export function ListingForm({
               {total < MAX_PHOTOS && (
                 <button type="button" onClick={() => fileInput.current?.click()}
                   className="press flex h-20 w-20 flex-col items-center justify-center rounded-xl border border-dashed border-line text-gray-3 hover:border-action hover:text-action">
-                  <span className="text-xl leading-none">+</span>
+                  <span aria-hidden className="icon-[lucide--image-plus] size-6" />
                   <span className="mt-1 text-[11px]">{total}/{MAX_PHOTOS}</span>
                 </button>
               )}

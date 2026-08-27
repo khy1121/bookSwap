@@ -53,7 +53,7 @@ export default async function ListingPage(props: PageProps<"/listings/[id]">) {
         <p className="mt-2 text-[24px] font-bold tabular-nums">{won(l.price)}</p>
         {l.course_id && (
           <Link href={`/courses/${l.course_id}`} className="press mt-2 inline-flex items-center gap-1 rounded-full text-[13px] text-action">
-            {l.course} · {l.prof} 교수 →
+            {l.course} · {l.prof} 교수<span aria-hidden className="icon-[lucide--chevron-right] size-3.5" />
           </Link>
         )}
       </section>

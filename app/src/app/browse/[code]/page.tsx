@@ -47,16 +47,16 @@ export default async function BrowseMajorPage(props: PageProps<"/browse/[code]">
     <div className="pb-8">
       <section className="px-4 pt-4 pb-3">
         <nav className="flex items-center gap-1 text-[12px] text-gray-3">
-          <Link href="/browse" className="press rounded-full hover:text-action">학과·트랙</Link>
+          <Link href="/browse" className="press inline-flex items-center gap-0.5 rounded-full hover:text-action"><span aria-hidden className="icon-[lucide--arrow-left] size-3.5" />학과·트랙</Link>
           {parent && (
             <>
-              <span>›</span>
+              <span aria-hidden className="icon-[lucide--chevron-right] size-3.5" />
               <Link href={`/browse/${parent.code}`} className="press rounded-full hover:text-action">{parent.name}</Link>
             </>
           )}
         </nav>
         <div className="mt-3 flex items-center gap-3">
-          <span aria-hidden className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-[22px] ${ic.bg}`}>{ic.icon}</span>
+          <span aria-hidden className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${ic.bg} ${ic.fg}`}><span className={`${ic.icon} size-6`} /></span>
           <div className="min-w-0">
             <h1 className="truncate text-[20px] font-bold tracking-tight">{node.name}</h1>
             <p className="text-[12px] text-gray-2">

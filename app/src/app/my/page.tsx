@@ -40,7 +40,7 @@ export default async function MyPage() {
                 <Cover src={l.photos?.[0] ?? l.cover_url} alt="" size="sm" />
                 <span className={`min-w-0 flex-1 ${done ? "text-gray-3" : ""}`}>
                   <span className={`block text-[11px] font-bold ${done ? "text-gray-3" : KIND_COLOR[l.kind]}`}>
-                    {KIND_LABEL[l.kind]}{done && " · 완료"}
+                    {KIND_LABEL[l.kind]}{done && <><span aria-hidden className="icon-[lucide--circle-check] ml-1 size-3" /> 완료</>}
                   </span>
                   <span className={`block truncate text-[14px] font-medium ${done ? "line-through" : ""}`}>{l.book_title}</span>
                   <span className="block truncate text-[12px] text-gray-2">{l.course ?? "수업 미지정"}</span>

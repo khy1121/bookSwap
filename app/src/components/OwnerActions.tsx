@@ -15,16 +15,16 @@ export function OwnerActions({ listingId, status, title }: { listingId: string; 
     <>
       <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
         <Link href={`/listings/${listingId}/edit`} className={`${base} border border-line bg-white text-gray-1 hover:border-action hover:text-action`}>
-          수정
+          <span aria-hidden className="icon-[lucide--pencil] size-4" />수정
         </Link>
         {status === "open" && (
           <button type="button" onClick={() => setSheet("done")} className={`${base} bg-navy text-white`}>
-            거래 완료
+            <span aria-hidden className="icon-[lucide--check] size-4" />거래 완료
           </button>
         )}
         <button type="button" onClick={() => setSheet("delete")}
           className={`${base} border border-red-200 bg-red-50 text-red-600 hover:bg-red-100`}>
-          삭제
+          <span aria-hidden className="icon-[lucide--trash-2] size-4" />삭제
         </button>
       </div>
 
