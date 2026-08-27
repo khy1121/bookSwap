@@ -28,5 +28,6 @@ jobs:
           cache-dependency-path: app/package-lock.json
       - run: npm ci
       - run: npm run lint
+      - run: npx next typegen   # PageProps/LayoutProps 전역 타입 생성 (.next/는 커밋 안 됨)
       - run: npx tsc --noEmit
       - run: npm run build
