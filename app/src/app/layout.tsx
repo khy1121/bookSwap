@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "BookSwap — 한성대 과목별 중고 교재",
   description: "한성대 과목·교수 기준으로 중고 교재를 사고팝니다. 교수님이 지정한 주교재를 같이 확인하세요.",
 };
+/** 피드백 채널(공개 오픈채팅). 환경변수가 있으면 그걸 우선한다. */
+const FEEDBACK_URL = "https://open.kakao.com/o/sfnqXPKi";
+
 export const viewport: Viewport = { themeColor: "#0a4da1", width: "device-width", initialScale: 1 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
@@ -46,7 +49,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <p><b className="text-gray-2">BookSwap</b> · 한성대 학생이 만든 비공식 서비스입니다. 거래는 당사자 간 직거래로 진행됩니다.</p>
           <p className="mt-1">
             불편한 점이 있으면{" "}
-            <a className="text-action underline" href={process.env.NEXT_PUBLIC_FEEDBACK_URL ?? "#"}>
+            <a className="text-action underline" href={process.env.NEXT_PUBLIC_FEEDBACK_URL ?? FEEDBACK_URL} target="_blank" rel="noreferrer">
               <span aria-hidden className="icon-[lucide--message-circle] mr-0.5 size-3" />오픈채팅
             </a>
             으로 알려주세요.
