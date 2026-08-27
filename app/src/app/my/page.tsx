@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
+import { must } from "@/lib/errors";
 import type { ListingPublic } from "@/lib/types";
 import { KIND_COLOR, KIND_LABEL, won } from "@/lib/types";
 import { Cover } from "@/components/Cover";
@@ -10,11 +11,11 @@ export default async function MyPage() {
   const user = await getUser();
   if (!user) redirect("/login?next=/my");
   const supabase = await createClient();
-  const { data: mine } = await supabase.from("listings").select("id").eq("user_id", user.id);
+  const mine = must(await supabase.from("listings").select("id").eq("user_id", user.id), "내 거래");
   const ids = (mine ?? []).map((m) => m.id);
-  const { data } = ids.length
-    ? await supabase.from("listings_public").select("*").in("id", ids).order("created_at", { ascending: false })
-    : { data: [] };
+  const data = ids.length
+    ? must(await supabase.from("listings_public").select("*").in("id", ids).order("created_at", { ascending: false }), "내 거래")
+    : [];
   const list = (data ?? []) as ListingPublic[];
 
   return (

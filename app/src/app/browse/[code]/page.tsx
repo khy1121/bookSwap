@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { must } from "@/lib/errors";
 import type { Course } from "@/lib/types";
 import { firstLine } from "@/lib/types";
 import { loadMajorTree } from "@/lib/majors";
@@ -19,11 +20,11 @@ export default async function BrowseMajorPage(props: PageProps<"/browse/[code]">
   const parent = node.parent ? tree.byCode.get(node.parent) : undefined;
   const ic = majorIcon(node.name);
 
-  const { data } = await supabase
+  const data = must(await supabase
     .from("courses")
     .select("*")
     .contains("majors", JSON.stringify([{ code }]))
-    .order("course");
+    .order("course"), "학과 과목");
   const rows = (data ?? []) as Row[];
 
   // 열린 매물 수 (과목별)

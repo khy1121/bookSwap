@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { must } from "@/lib/errors";
 import type { Course, ListingPublic } from "@/lib/types";
 import { KIND_LABEL, firstLine, won } from "@/lib/types";
 import { Cover } from "@/components/Cover";
@@ -42,12 +43,12 @@ export default async function CoursePage(props: PageProps<"/courses/[id]">) {
   const { data: course } = await supabase.from("courses").select("*").eq("id", id).single<Course>();
   if (!course) notFound();
 
-  const { data } = await supabase
+  const data = must(await supabase
     .from("listings_public")
     .select("*")
     .eq("course_id", id)
     .eq("status", "open")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false }), "매물 목록");
   const listings = (data ?? []) as ListingPublic[];
   const sells = listings.filter((l) => l.kind === "sell");
   const buys = listings.filter((l) => l.kind === "buy");

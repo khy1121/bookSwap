@@ -26,7 +26,8 @@ const PARENT_MIN_SHARE = 0.4;
 export async function loadMajorTree(supabase: Awaited<ReturnType<typeof createClient>>) {
   const rows: { plan: string; course_code: string; majors: { code: string; name: string }[] }[] = [];
   for (let from = 0; ; from += 1000) {
-    const { data } = await supabase.from("courses").select("plan, course_code, majors").range(from, from + 999);
+    const { data, error } = await supabase.from("courses").select("plan, course_code, majors").range(from, from + 999);
+    if (error) throw new Error(`학과 목록을 불러오지 못했습니다. ${error.message}`);
     rows.push(...((data ?? []) as typeof rows));
     if (!data || data.length < 1000) break;
   }

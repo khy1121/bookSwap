@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { must } from "@/lib/errors";
 import { track } from "@/lib/events";
 import type { Course, ListingPublic } from "@/lib/types";
 import { KIND_COLOR, KIND_LABEL, firstLine, won } from "@/lib/types";
@@ -9,28 +10,28 @@ import { SearchBox } from "@/components/SearchBox";
 
 export default async function Home(props: PageProps<"/">) {
   const { q = "" } = await props.searchParams;
-  const query = String(q).trim();
+  const query = String(q).trim().slice(0, 50);
   const supabase = await createClient();
 
   let courses: Course[] = [];
   if (query) {
     const safe = query.replace(/[%,()]/g, " ");
-    const { data } = await supabase
+    const data = must(await supabase
       .from("courses")
       .select("id, term, major, course_code, course, prof, bunban, book, subbook, cover_url")
       .or(`course.ilike.%${safe}%,prof.ilike.%${safe}%,book.ilike.%${safe}%`)
       .order("course")
-      .limit(50);
+      .limit(50), "수업 검색 결과");
     courses = (data ?? []) as Course[];
     await track("search", { q: query, results: courses.length });
   }
 
-  const { data: recent } = await supabase
+  const recent = must(await supabase
     .from("listings_public")
     .select("*")
     .eq("status", "open")
     .order("created_at", { ascending: false })
-    .limit(12);
+    .limit(12), "최근 거래");
   const listings = (recent ?? []) as ListingPublic[];
 
   const grouped = new Map<string, Course[]>();

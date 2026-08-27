@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 /** 매 요청마다 Supabase 세션 토큰을 갱신해 쿠키에 되쓴다. 인증 판단은 여기서 하지 않는다(각 서버 액션/페이지에서 재확인). */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return response; // 설정 누락 시 페이지는 뜨게
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -18,7 +19,11 @@ export async function proxy(request: NextRequest) {
       },
     },
   );
-  await supabase.auth.getUser();
+  try {
+    await supabase.auth.getUser();
+  } catch (e) {
+    console.error("[proxy] session refresh failed", e instanceof Error ? e.message : e);
+  }
   return response;
 }
 

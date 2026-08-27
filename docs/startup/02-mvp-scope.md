@@ -84,3 +84,11 @@ build 통: **3개** ✓
 | 학과·트랙 카테고리 탐색 `/browse` | #3 | 분반별 소속 학과 전체 저장(004), 컴퓨터공학부 101분반 |
 
 배포: https://book-swap-virid.vercel.app (Vercel, Root=app, `vercel.json` framework=nextjs). main 보호 + `verify` 필수 체크.
+
+## 예외 처리 (PR #8)
+- 경계: `app/error.tsx`(다시 시도/홈), `not-found.tsx`, `global-error.tsx`. 페이지 조회는 `must()`로 실패를 삼키지 않고 경계로 올림
+- 서버 액션: 입력 한도(`lib/errors.ts` LIMITS — 제목 100자, 판본 30, 연락 200, 메모 500, 가격 ≤100만, 사진 3장·3MB, 진행 중 거래 30개), 연락처는 오픈채팅 링크 또는 에타 닉만(전화·이메일 거부), course_id UUID 검증, 완료된 거래 연락처 조회 거부
+- Supabase/Auth/Storage 오류 → `toMessage()`로 한국어 변환, 원문은 서버 로그. 삭제/완료 실패는 `?toast=error|forbidden`
+- 이미지: HEIC/손상 파일 안내, 25MB 원본 제한, 표지·사진 로드 실패 시 플레이스홀더 폴백
+- 프록시: env 누락·세션 갱신 실패 시에도 페이지는 렌더
+- 알려진 것: `loading.tsx` 스트리밍 때문에 notFound() 페이지가 HTTP 200으로 내려감(UI는 404 화면). SEO 필요해지면 loading 제거 또는 존재 확인 선행

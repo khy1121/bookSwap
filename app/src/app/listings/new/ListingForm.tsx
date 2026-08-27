@@ -119,17 +119,17 @@ export function ListingForm({
 
         <label className={label}>
           교재명
-          <input name="book_title" required defaultValue={initial?.book_title ?? defaultTitle} className={field} placeholder="책 제목 — 여러 권이면 한 권씩" />
+          <input name="book_title" required maxLength={100} defaultValue={initial?.book_title ?? defaultTitle} className={field} placeholder="책 제목 — 여러 권이면 한 권씩" />
         </label>
 
         <div className="grid grid-cols-2 gap-3">
           <label className={label}>
             판본
-            <input name="edition" defaultValue={initial?.edition ?? ""} className={field} placeholder="개정5판" />
+            <input name="edition" maxLength={30} defaultValue={initial?.edition ?? ""} className={field} placeholder="개정5판" />
           </label>
           <label className={label}>
             {kind === "buy" ? "최대 얼마까지" : "얼마에"}
-            <input name="price" inputMode="numeric" defaultValue={initial?.price ?? ""} className={field} placeholder="12000" />
+            <input name="price" inputMode="numeric" maxLength={9} defaultValue={initial?.price ?? ""} className={field} placeholder="12000" />
           </label>
         </div>
 
@@ -147,13 +147,13 @@ export function ListingForm({
 
         <label className={label}>
           연락 방법
-          <input name="contact" required defaultValue={initial?.contact ?? ""} className={field} placeholder="카톡 오픈채팅 링크 또는 에타 닉네임" />
-          <span className="mt-1 block text-[11px] font-normal text-gray-3">로그인한 한성대 학생에게만 보입니다</span>
+          <input name="contact" required maxLength={200} defaultValue={initial?.contact ?? ""} className={field} placeholder="https://open.kakao.com/… 또는 에타 닉네임" />
+          <span className="mt-1 block text-[11px] font-normal text-gray-3">로그인한 한성대 학생에게만 보입니다. 전화번호·이메일은 넣지 마세요.</span>
         </label>
 
         <label className={label}>
           메모 <span className="font-normal text-gray-3">(선택)</span>
-          <textarea name="note" rows={2} defaultValue={initial?.note ?? ""} className={`${field} h-auto py-3`} placeholder="직거래 장소, 필기 정도 등" />
+          <textarea name="note" rows={2} maxLength={500} defaultValue={initial?.note ?? ""} className={`${field} h-auto py-3`} placeholder="직거래 장소, 필기 정도 등" />
         </label>
       </div>
 

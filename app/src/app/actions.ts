@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { track } from "@/lib/events";
 import { CONDITIONS } from "@/lib/types";
+import { LIMITS, toMessage } from "@/lib/errors";
 
 const DOMAIN = "@hansung.ac.kr";
 
@@ -15,7 +16,7 @@ export async function signIn(_prev: ActionState, form: FormData): Promise<Action
   const referral = String(form.get("referral") ?? "").slice(0, 40);
   const nextRaw = String(form.get("next") ?? "/");
   const next = nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/";
-  if (!email.endsWith(DOMAIN)) return { error: `${DOMAIN} 이메일만 사용할 수 있습니다.` };
+  if (!/^[a-z0-9._%+-]+@hansung\.ac\.kr$/.test(email)) return { error: `${DOMAIN} 이메일만 사용할 수 있습니다.` };
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
@@ -24,7 +25,7 @@ export async function signIn(_prev: ActionState, form: FormData): Promise<Action
       data: { referral_source: referral || null },
     },
   });
-  if (error) return { error: error.message };
+  if (error) { console.error("[signIn]", error.message); return { error: toMessage(error) }; }
   await track("login_link_sent", { referral });
   return { ok: true, message: `${email} 로 로그인 링크를 보냈습니다. 메일함을 확인하세요.` };
 }
@@ -40,17 +41,23 @@ const MAX_PHOTOS = 3;
 /** 폼 공통 필드 파싱·검증. 등록과 수정이 같이 쓴다. */
 function parseListingForm(form: FormData) {
   const kind = form.get("kind") === "buy" ? "buy" : "sell";
-  const course_id = String(form.get("course_id") ?? "") || null;
-  const book_title = String(form.get("book_title") ?? "").trim();
-  const edition = String(form.get("edition") ?? "").trim() || null;
+  const courseRaw = String(form.get("course_id") ?? "").trim();
+  const course_id = /^[0-9a-f-]{36}$/i.test(courseRaw) ? courseRaw : null;
+  const book_title = String(form.get("book_title") ?? "").replace(/\s+/g, " ").trim();
+  const edition = String(form.get("edition") ?? "").trim().slice(0, LIMITS.edition) || null;
   const condRaw = String(form.get("condition") ?? "");
   const condition = (CONDITIONS as readonly string[]).includes(condRaw) ? condRaw : null;
   const priceRaw = String(form.get("price") ?? "").replace(/[^\d]/g, "");
   const price = priceRaw ? Number(priceRaw) : null;
   const contact = String(form.get("contact") ?? "").trim();
-  const note = String(form.get("note") ?? "").trim().slice(0, 500) || null;
+  const note = String(form.get("note") ?? "").trim().slice(0, LIMITS.note) || null;
   if (!book_title) return { error: "교재명을 입력하세요." } as const;
+  if (book_title.length > LIMITS.title) return { error: `교재명은 ${LIMITS.title}자 이내로 입력하세요.` } as const;
+  if (price != null && (!Number.isFinite(price) || price > LIMITS.priceMax)) return { error: `가격은 ${LIMITS.priceMax.toLocaleString("ko-KR")}원 이하로 입력하세요.` } as const;
   if (!contact) return { error: "연락 방법(오픈채팅 링크 또는 에타 닉)을 입력하세요." } as const;
+  if (contact.length > LIMITS.contact) return { error: "연락 방법이 너무 깁니다." } as const;
+  if (/^https?:\/\//i.test(contact) && !/^https:\/\/open\.kakao\.com\//i.test(contact)) return { error: "링크는 카카오 오픈채팅(https://open.kakao.com/…)만 넣을 수 있습니다. 다른 연락처는 에브리타임 닉네임으로 적어주세요." } as const;
+  if (/@|\d{3}-?\d{3,4}-?\d{4}/.test(contact)) return { error: "이메일·전화번호는 넣지 마세요. 오픈채팅 링크나 에타 닉네임만 받습니다." } as const;
   return { fields: { kind, course_id, book_title, edition, condition, price, contact, note } } as const;
 }
 
@@ -63,18 +70,18 @@ async function uploadPhotos(
   const urls: string[] = [];
   for (const [i, f] of files.entries()) {
     if (!f.type.startsWith("image/")) return { error: "이미지 파일만 올릴 수 있습니다." };
-    if (f.size > 3 * 1024 * 1024) return { error: "사진 한 장은 3MB 이하여야 합니다." };
+    if (f.size > LIMITS.photoBytes) return { error: "사진 한 장은 3MB 이하여야 합니다." };
     const ext = f.type === "image/png" ? "png" : f.type === "image/webp" ? "webp" : "jpg";
     const path = `${userId}/${Date.now()}-${i}.${ext}`;
     const { error } = await supabase.storage.from("listing-photos").upload(path, f, { contentType: f.type });
-    if (error) return { error: `사진 업로드 실패: ${error.message}` };
+    if (error) { console.error("[upload]", error.message); return { error: `사진 업로드 실패: ${toMessage(error)}` }; }
     urls.push(supabase.storage.from("listing-photos").getPublicUrl(path).data.publicUrl);
   }
   return { urls };
 }
 
 const newFiles = (form: FormData) =>
-  form.getAll("photos").filter((f): f is File => f instanceof File && f.size > 0);
+  form.getAll("photos").filter((f): f is File => f instanceof File && f.size > 0).slice(0, LIMITS.photos);
 
 export async function createListing(_prev: ActionState, form: FormData): Promise<ActionState> {
   const user = await getUser();
@@ -84,6 +91,8 @@ export async function createListing(_prev: ActionState, form: FormData): Promise
   const { fields } = parsed;
 
   const supabase = await createClient();
+  const { count } = await supabase.from("listings").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "open");
+  if ((count ?? 0) >= LIMITS.openListingsPerUser) return { error: `진행 중인 거래는 ${LIMITS.openListingsPerUser}개까지 올릴 수 있습니다. 끝난 거래를 완료 처리해 주세요.` };
   let photos: string[] = [];
   if (fields.kind === "sell") {
     const up = await uploadPhotos(supabase, user.id, newFiles(form).slice(0, MAX_PHOTOS));
@@ -96,7 +105,7 @@ export async function createListing(_prev: ActionState, form: FormData): Promise
     .insert({ user_id: user.id, ...fields, photos })
     .select("id")
     .single();
-  if (error) return { error: error.message };
+  if (error) { console.error("[createListing]", error.code, error.message); return { error: toMessage(error) }; }
 
   await track("listing_created", { kind: fields.kind, course_id: fields.course_id, has_price: fields.price != null, photos: photos.length });
   revalidatePath("/");
@@ -113,7 +122,8 @@ export async function updateListing(listingId: string, _prev: ActionState, form:
 
   const supabase = await createClient();
   const { data: own } = await supabase.from("listings").select("user_id, photos").eq("id", listingId).single();
-  if (!own || own.user_id !== user.id) return { error: "본인 매물만 수정할 수 있습니다." };
+  if (!own) return { error: "거래를 찾을 수 없습니다. 삭제되었을 수 있습니다." };
+  if (own.user_id !== user.id) return { error: "본인 매물만 수정할 수 있습니다." };
 
   let photos: string[] = [];
   if (fields.kind === "sell") {
@@ -126,7 +136,7 @@ export async function updateListing(listingId: string, _prev: ActionState, form:
   }
 
   const { error } = await supabase.from("listings").update({ ...fields, photos }).eq("id", listingId).eq("user_id", user.id);
-  if (error) return { error: error.message };
+  if (error) { console.error("[updateListing]", error.code, error.message); return { error: toMessage(error) }; }
 
   await track("listing_updated", { listing_id: listingId, kind: fields.kind });
   revalidatePath("/");
@@ -141,15 +151,20 @@ export async function deleteListing(listingId: string) {
   if (!user) redirect("/login");
   const supabase = await createClient();
   const { data: own } = await supabase.from("listings").select("user_id, photos, course_id").eq("id", listingId).single();
-  if (!own || own.user_id !== user.id) redirect("/my");
+  if (!own) redirect("/my?toast=error");
+  if (own.user_id !== user.id) redirect("/my?toast=forbidden");
 
   const paths = (own.photos as string[])
     .map((u) => u.split("/listing-photos/")[1])
     .filter((p): p is string => !!p);
-  if (paths.length) await supabase.storage.from("listing-photos").remove(paths);
+  if (paths.length) {
+    const { error: rmErr } = await supabase.storage.from("listing-photos").remove(paths);
+    if (rmErr) console.error("[deleteListing] photo cleanup", rmErr.message); // 사진 정리 실패는 삭제를 막지 않는다
+  }
 
-  const { error } = await supabase.from("listings").delete().eq("id", listingId).eq("user_id", user.id);
-  if (error) throw new Error(error.message);
+  const { data: deleted, error } = await supabase.from("listings").delete().eq("id", listingId).eq("user_id", user.id).select("id");
+  if (error) { console.error("[deleteListing]", error.code, error.message); redirect("/my?toast=error"); }
+  if (!deleted?.length) redirect("/my?toast=forbidden"); // RLS에 막히면 0건
 
   await track("listing_deleted", { listing_id: listingId });
   revalidatePath("/");
@@ -163,8 +178,9 @@ export async function revealContact(listingId: string): Promise<{ contact?: stri
   const user = await getUser();
   if (!user) return { error: "로그인 후 연락처를 볼 수 있습니다." };
   const supabase = await createClient();
-  const { data, error } = await supabase.from("listings").select("contact, kind, course_id").eq("id", listingId).single();
-  if (error || !data) return { error: "매물을 찾을 수 없습니다." };
+  const { data, error } = await supabase.from("listings").select("contact, kind, course_id, status").eq("id", listingId).single();
+  if (error || !data) return { error: "거래를 찾을 수 없습니다. 삭제되었을 수 있습니다." };
+  if (data.status === "done") return { error: "이미 끝난 거래입니다." };
   await track("contact_clicked", { listing_id: listingId, kind: data.kind, course_id: data.course_id });
   return { contact: data.contact };
 }
@@ -173,7 +189,9 @@ export async function markDone(listingId: string) {
   const user = await getUser();
   if (!user) redirect("/login");
   const supabase = await createClient();
-  await supabase.from("listings").update({ status: "done" }).eq("id", listingId).eq("user_id", user.id);
+  const { data: updated, error } = await supabase.from("listings").update({ status: "done" }).eq("id", listingId).eq("user_id", user.id).select("id");
+  if (error) { console.error("[markDone]", error.message); redirect(`/listings/${listingId}?toast=error`); }
+  if (!updated?.length) redirect(`/listings/${listingId}?toast=forbidden`);
   await track("listing_done", { listing_id: listingId });
   revalidatePath("/");
   revalidatePath(`/listings/${listingId}`);

@@ -21,7 +21,7 @@ export function SearchBox({ defaultValue = "" }: { defaultValue?: string }) {
       <input ref={ref} name="q" value={v} onChange={(e) => setV(e.target.value)}
         placeholder="예) 객체지향언어2, 황기태, 컴퓨터공학부"
         className="min-w-0 flex-1 bg-transparent px-4 text-[15px] outline-none placeholder:text-gray-3"
-        autoComplete="off" autoFocus />
+        autoComplete="off" autoFocus maxLength={50} />
       {v && (
         <button type="button" aria-label="지우기" onClick={() => { setV(""); ref.current?.focus(); }}
           className="press px-2 text-gray-3 hover:text-ink">
