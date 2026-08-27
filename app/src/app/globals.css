@@ -1,0 +1,70 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
+@import "tailwindcss";
+
+/* 한성대 디자인 시스템 (hansung.ac.kr CSS에서 추출) */
+:root {
+  --hs-blue: #0a4da1;      /* 메인 블루 — 구매(구매자) */
+  --hs-navy: #002c77;      /* 네이비 — 강조 텍스트/헤더 */
+  --hs-sky: #0599d9;       /* 스카이 — 판매(판매자) */
+  --hs-action: #0064ef;    /* 링크/액션 */
+  --hs-ink: #191919;
+  --hs-gray-1: #333333;
+  --hs-gray-2: #666666;
+  --hs-gray-3: #767676;
+  --hs-line: #ececec;
+  --hs-bg: #f7f7f7;
+  --hs-bg-soft: #f3f7ff;
+
+  --background: #ffffff;
+  --foreground: var(--hs-ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-blue: var(--hs-blue);
+  --color-navy: var(--hs-navy);
+  --color-sky: var(--hs-sky);
+  --color-action: var(--hs-action);
+  --color-ink: var(--hs-ink);
+  --color-gray-1: var(--hs-gray-1);
+  --color-gray-2: var(--hs-gray-2);
+  --color-gray-3: var(--hs-gray-3);
+  --color-line: var(--hs-line);
+  --color-surface: var(--hs-bg);
+  --color-surface-soft: var(--hs-bg-soft);
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 시그니처: 수강편람 시간표 셀을 닮은 과목 코드 라벨 */
+.course-code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--hs-navy);
+  background: var(--hs-bg-soft);
+  border-left: 3px solid var(--hs-blue);
+  padding: 2px 6px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--hs-action);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
