@@ -5,6 +5,7 @@ import type { Course } from "@/lib/types";
 import { firstLine } from "@/lib/types";
 import { loadMajorTree } from "@/lib/majors";
 import { Cover } from "@/components/Cover";
+import { majorIcon } from "@/lib/majorIcon";
 
 type Row = Course & { majors: { code: string; name: string }[] };
 
@@ -16,6 +17,7 @@ export default async function BrowseMajorPage(props: PageProps<"/browse/[code]">
   const node = tree.byCode.get(code);
   if (!node) notFound();
   const parent = node.parent ? tree.byCode.get(node.parent) : undefined;
+  const ic = majorIcon(node.name);
 
   const { data } = await supabase
     .from("courses")
@@ -42,45 +44,50 @@ export default async function BrowseMajorPage(props: PageProps<"/browse/[code]">
 
   return (
     <div className="pb-8">
-      <section className="px-4 pt-5 pb-3">
+      <section className="px-4 pt-4 pb-3">
         <nav className="flex items-center gap-1 text-[12px] text-gray-3">
-          <Link href="/browse" className="hover:text-action">학과·트랙</Link>
+          <Link href="/browse" className="press rounded-full hover:text-action">학과·트랙</Link>
           {parent && (
             <>
               <span>›</span>
-              <Link href={`/browse/${parent.code}`} className="hover:text-action">{parent.name}</Link>
+              <Link href={`/browse/${parent.code}`} className="press rounded-full hover:text-action">{parent.name}</Link>
             </>
           )}
         </nav>
-        <div className="mt-2 flex items-center gap-2">
-          <span className="course-code">{code}</span>
-          <h1 className="text-[20px] font-bold tracking-tight">{node.name}</h1>
-        </div>
-        <p className="mt-1 text-[13px] text-gray-2">
-          과목 {grouped.size} · 분반 {rows.length}
-          {node.kind === "track" && node.share != null && ` · ${parent?.name ?? ""} 분반의 ${Math.round(node.share * 100)}% 공유`}
-        </p>
-
-        {/* 학부·학과면 하위 트랙을 칩으로 — 여기서 골라 내려간다 */}
-        {node.tracks.length > 0 && (
-          <div className="mt-3">
-            <div className="text-[11px] font-semibold tracking-wide text-navy">트랙 {node.tracks.length}</div>
-            <ul className="mt-1.5 flex flex-wrap gap-1.5">
-              {node.tracks.map((t) => (
-                <li key={t.code}>
-                  <Link href={`/browse/${t.code}`}
-                    className="press inline-flex items-center gap-1 rounded-full border border-line bg-white px-3 py-1.5 text-[12px] font-medium hover:border-action hover:text-action">
-                    {t.name}
-                    <span className="text-gray-3">{t.courses}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+        <div className="mt-3 flex items-center gap-3">
+          <span aria-hidden className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-[22px] ${ic.bg}`}>{ic.icon}</span>
+          <div className="min-w-0">
+            <h1 className="truncate text-[20px] font-bold tracking-tight">{node.name}</h1>
+            <p className="text-[12px] text-gray-2">
+              <span className="course-code mr-1.5">{code}</span>
+              과목 {grouped.size} · 분반 {rows.length}
+              {node.kind === "track" && node.share != null && parent ? ` · ${parent.name} 분반의 ${Math.round(node.share * 100)}%` : ""}
+            </p>
           </div>
-        )}
+        </div>
       </section>
 
-      <ul className="border-t border-line">
+      {/* 학부·학과면 트랙 필터 바 (가로 스크롤 칩) — 당근 카테고리 칩 패턴 */}
+      {node.tracks.length > 0 && (
+        <div className="sticky top-14 z-10 border-y border-line bg-white/95 backdrop-blur">
+          <ul className="flex gap-1.5 overflow-x-auto px-4 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <li className="shrink-0">
+              <span className="inline-flex h-8 items-center rounded-full bg-navy px-3 text-[12px] font-semibold text-white">전체 {grouped.size}</span>
+            </li>
+            {node.tracks.map((t) => (
+              <li key={t.code} className="shrink-0">
+                <Link href={`/browse/${t.code}`}
+                  className="press inline-flex h-8 items-center gap-1 rounded-full border border-line bg-white px-3 text-[12px] font-medium text-gray-1 hover:border-action hover:text-action">
+                  {t.name.replace(/트랙$/, "")}
+                  <span className="text-gray-3">{t.courses}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <ul className="stagger">
         {[...grouped.entries()].map(([name, list]) => {
           const sum = list.reduce(
             (a, c) => { const e = listingCount.get(c.id); return { sell: a.sell + (e?.sell ?? 0), buy: a.buy + (e?.buy ?? 0) }; },
@@ -103,7 +110,7 @@ export default async function BrowseMajorPage(props: PageProps<"/browse/[code]">
                 <ul className="mt-1.5 space-y-1">
                   {list.map((c) => (
                     <li key={c.id}>
-                      <Link href={`/courses/${c.id}`} className="group flex items-baseline gap-2 text-[13px]">
+                      <Link href={`/courses/${c.id}`} className="group flex items-baseline gap-2 rounded text-[13px]">
                         <span className="shrink-0 font-medium text-ink group-hover:text-action">
                           {c.prof}{c.bunban ? <span className="text-gray-3"> {c.bunban}</span> : null}
                         </span>
