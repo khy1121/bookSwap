@@ -1,0 +1,7 @@
+# 루트 공통. app/ 내부 규칙은 app/.gitignore
+.env*
+!**/.env.example
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
