@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import "./globals.css";
-import { getUser } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { signOut } from "./actions";
 import { Toast } from "@/components/Toast";
 
@@ -17,6 +17,14 @@ export const viewport: Viewport = { themeColor: "#0a4da1", width: "device-width"
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const user = await getUser();
+  let unread = 0;
+  if (user) {
+    try {
+      const supabase = await createClient();
+      const { data } = await supabase.rpc("my_unread_count");
+      unread = typeof data === "number" ? data : 0;
+    } catch { unread = 0; }
+  }
   const nav = "press inline-flex items-center rounded-full px-2.5 py-1.5 hover:bg-surface hover:text-ink";
   return (
     <html lang="ko" className="h-full">
@@ -33,6 +41,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               <Link href="/browse" className={nav}><span aria-hidden className="icon-[lucide--list] mr-1 size-4" />학과</Link>
               {user ? (
                 <>
+                  <Link href="/chats" className={`${nav} relative`} aria-label={unread ? `채팅, 안 읽음 ${unread}` : "채팅"}>
+                    <span aria-hidden className="icon-[lucide--message-circle] size-4" />
+                    {unread > 0 && <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-blue px-1 text-center text-[10px] font-bold leading-4 text-white">{unread > 99 ? "99+" : unread}</span>}
+                  </Link>
                   <Link href="/my" className={nav}><span aria-hidden className="icon-[lucide--user] mr-1 size-4" />내 거래</Link>
                   <form action={signOut}>
                     <button className={nav} aria-label="로그아웃"><span aria-hidden className="icon-[lucide--log-out] size-4" /></button>
