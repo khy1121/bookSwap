@@ -24,9 +24,13 @@ for code, name in majors:
         d = {c.tag: (c.text or "").strip() for c in row}
         plan = d.get("plan", "")
         if not plan or plan == "x": continue
-        rows.setdefault(plan, {"plan": plan, "major_code": code, "major": name,
-                               "course_code": d["kwamokcode"], "course": d["kwamokname"],
-                               "prof": d["prof"], "bunban": d["bunban"], "isu": d["isugubun"]})
+        row = rows.setdefault(plan, {"plan": plan, "major_code": code, "major": name,
+                                     "course_code": d["kwamokcode"], "course": d["kwamokname"],
+                                     "prof": d["prof"], "bunban": d["bunban"], "isu": d["isugubun"],
+                                     "majors": []})
+        # 같은 분반이 여러 학과/트랙에 개설되면 전부 기록 (카테고리 탐색용)
+        if (code, name) not in row["majors"]:
+            row["majors"].append((code, name))
     time.sleep(0.2)
 print(f"{len(rows)} sections with syllabus", flush=True)
 
@@ -51,9 +55,11 @@ with ThreadPoolExecutor(max_workers=6) as ex:
         done += 1
         if done % 200 == 0: print(f"{done}/{len(rows)}", flush=True)
 
-cols = ["major_code","major","course_code","course","prof","bunban","isu","insertYn","book","subbook","plan"]
+cols = ["major_code","major","course_code","course","prof","bunban","isu","insertYn","book","subbook","plan","majors"]
 with open(OUT, "w", newline="", encoding="utf-8-sig") as fp:
     w = csv.DictWriter(fp, fieldnames=cols); w.writeheader()
-    for r in sorted(rows.values(), key=lambda x: (x["major_code"], x["course_code"], x["prof"])): w.writerow(r)
+    for r in sorted(rows.values(), key=lambda x: (x["major_code"], x["course_code"], x["prof"])):
+        r = dict(r); r["majors"] = ";".join(f"{c}|{n}" for c, n in r["majors"])  # "K170|[K170] 컴퓨터공학부;V021|..."
+        w.writerow(r)
 n_book = sum(1 for r in rows.values() if r.get("book") and r["book"] not in ("없음","-",""))
 print(f"saved {OUT}: {len(rows)} sections, {n_book} with 주교재", flush=True)

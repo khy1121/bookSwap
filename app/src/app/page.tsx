@@ -53,6 +53,9 @@ export default async function Home(props: PageProps<"/">) {
           />
           <button className="px-5 text-[14px] font-semibold text-white bg-navy">검색</button>
         </form>
+        <Link href="/browse" className="mt-3 inline-flex items-center gap-1 text-[13px] font-medium text-action">
+          학과·트랙으로 찾기 →
+        </Link>
       </section>
 
       {query && (

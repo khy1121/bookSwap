@@ -18,6 +18,7 @@ const records = rows.map((r) => ({
   term, plan: r.plan, major_code: r.major_code, major: r.major,
   course_code: r.course_code, course: r.course, prof: r.prof, bunban: r.bunban,
   book: r.book || null, subbook: r.subbook || null,
+  majors: (r.majors ?? "").split(";").filter(Boolean).map((m) => { const [code, name] = m.split("|"); return { code, name }; }),
 }));
 
 async function main() {
