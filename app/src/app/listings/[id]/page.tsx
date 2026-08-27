@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
 import type { ListingPublic } from "@/lib/types";
 import { KIND_COLOR, KIND_LABEL, ROLE_LABEL, won } from "@/lib/types";
-import { markDone } from "@/app/actions";
 import { RevealContact } from "./RevealContact";
+import { OwnerActions } from "@/components/OwnerActions";
 import { Cover } from "@/components/Cover";
 
 export default async function ListingPage(props: PageProps<"/listings/[id]">) {
@@ -85,10 +85,10 @@ export default async function ListingPage(props: PageProps<"/listings/[id]">) {
         )}
       </section>
 
-      {isOwner && !done && (
-        <form action={markDone.bind(null, l.id)} className="px-4 py-2">
-          <button className="text-[13px] text-gray-2 underline">거래 완료로 표시</button>
-        </form>
+      {isOwner && (
+        <div className="px-4 py-2">
+          <OwnerActions listingId={l.id} status={l.status} />
+        </div>
       )}
 
       {!done && !isOwner && <RevealContact listingId={l.id} loggedIn={!!user} kind={l.kind} />}

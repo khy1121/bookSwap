@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
 import type { ListingPublic } from "@/lib/types";
 import { KIND_COLOR, KIND_LABEL, won } from "@/lib/types";
+import { Cover } from "@/components/Cover";
+import { OwnerActions } from "@/components/OwnerActions";
 
 export default async function MyPage() {
   const user = await getUser();
@@ -27,23 +29,27 @@ export default async function MyPage() {
         </p>
       )}
       <ul className="border-t border-line">
-        {list.map((l) => (
-          <li key={l.id} className="border-b border-line">
-            <Link href={`/listings/${l.id}`} className="flex items-center gap-3 px-4 py-3">
-              <span className={`w-8 shrink-0 text-[12px] font-bold ${l.status === "done" ? "text-gray-3" : KIND_COLOR[l.kind]}`}>
-                {KIND_LABEL[l.kind]}
-              </span>
-              <span className={`min-w-0 flex-1 ${l.status === "done" ? "text-gray-3 line-through" : ""}`}>
-                <span className="block truncate text-[14px] font-medium">{l.book_title}</span>
-                <span className="block truncate text-[12px] text-gray-2">{l.course ?? "수업 미지정"}</span>
-              </span>
-              <span className="shrink-0 text-right">
-                <span className="block text-[14px] font-semibold tabular-nums">{won(l.price)}</span>
-                <span className="block text-[11px] text-gray-3">{l.status === "done" ? "완료" : "진행 중"}</span>
-              </span>
-            </Link>
-          </li>
-        ))}
+        {list.map((l) => {
+          const done = l.status === "done";
+          return (
+            <li key={l.id} className="border-b border-line px-4 py-3">
+              <Link href={`/listings/${l.id}`} className="flex items-center gap-3">
+                <Cover src={l.photos?.[0] ?? l.cover_url} alt="" size="sm" />
+                <span className={`min-w-0 flex-1 ${done ? "text-gray-3" : ""}`}>
+                  <span className={`block text-[11px] font-bold ${done ? "text-gray-3" : KIND_COLOR[l.kind]}`}>
+                    {KIND_LABEL[l.kind]}{done && " · 완료"}
+                  </span>
+                  <span className={`block truncate text-[14px] font-medium ${done ? "line-through" : ""}`}>{l.book_title}</span>
+                  <span className="block truncate text-[12px] text-gray-2">{l.course ?? "수업 미지정"}</span>
+                </span>
+                <span className="shrink-0 text-[14px] font-semibold tabular-nums">{won(l.price)}</span>
+              </Link>
+              <div className="mt-2 pl-[52px]">
+                <OwnerActions listingId={l.id} status={l.status} compact />
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
