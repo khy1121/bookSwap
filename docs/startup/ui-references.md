@@ -50,3 +50,9 @@
 - 배치: 헤더(학과 list / 내 거래 user / 로그아웃 log-out / 로그인 mail), 검색(search·x·loader), 계열 배지(cpu·palette·trending-up·book-open·scissors·landmark·drama·graduation-cap·school), 액션(pencil·check·trash-2), 연락(copy·external-link·message-circle), 사진(image-plus), 오류(triangle-alert·package-x), 목록 chevron-right
 - 브랜드: BookSwap (워드마크 + book-open 아이콘, HANSUNG 서브)
 - 서체: Pretendard Variable 단일. Geist Mono 제거, 과목 코드는 Pretendard tabular-nums
+
+## 학과 카테고리 3차 — 스플릿 뷰 (PR #11)
+- 레퍼런스: 무신사·29CM·쿠팡 카테고리(좌 대분류/우 소분류), 숨고 1,000개 카테고리 사례(스플릿 뷰 채택, "인기 항목 강조 무효" A/B), 29CM 아코디언
+  - https://maily.so/tipster/posts/vpzlqe02rk9 · https://soomgo.team/blog/posts/6698cf6064817254873bc8ee
+- 구현: 좌측 레일 = 계열 8개(`lib/majorIcon.ts` FAMILIES, 키워드 규칙), 우측 = 해당 계열 학부·학과 카드 + 소속 트랙 칩. 한 화면에 한 계열만. 검색은 전체 즉시 필터
+- 핀터레스트는 크롬 확장 사이트 권한이 없어 열람 불가 (사용자가 허용하면 추가 조사 가능)
