@@ -10,6 +10,9 @@ const MESSAGES: Record<string, string> = {
   deleted: "삭제했습니다",
   done: "거래 완료로 표시했습니다",
   login: "로그인했습니다",
+  error: "처리하지 못했습니다. 잠시 후 다시 시도해 주세요",
+  forbidden: "본인 거래만 변경할 수 있습니다",
+  expired: "로그인이 만료되었습니다. 다시 로그인해 주세요",
 };
 
 const DURATION = 2600;
