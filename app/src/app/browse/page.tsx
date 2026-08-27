@@ -6,7 +6,7 @@ import { MajorSearch } from "@/components/MajorSearch";
 function Card({ m, sub }: { m: MajorNode; sub?: string }) {
   return (
     <li className="bg-white">
-      <Link href={`/browse/${m.code}`} className="flex h-full flex-col justify-between px-4 py-3 hover:bg-surface-soft">
+      <Link href={`/browse/${m.code}`} className="row flex h-full flex-col justify-between px-4 py-3">
         <span className="text-[14px] font-medium leading-snug">{m.name}</span>
         <span className="mt-1 text-[11px] text-gray-3">
           <span className="course-code mr-1">{m.code}</span>

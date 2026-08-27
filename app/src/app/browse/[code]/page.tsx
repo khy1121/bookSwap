@@ -69,7 +69,7 @@ export default async function BrowseMajorPage(props: PageProps<"/browse/[code]">
               {node.tracks.map((t) => (
                 <li key={t.code}>
                   <Link href={`/browse/${t.code}`}
-                    className="inline-flex items-center gap-1 rounded-full border border-line bg-white px-3 py-1.5 text-[12px] font-medium hover:border-action hover:text-action">
+                    className="press inline-flex items-center gap-1 rounded-full border border-line bg-white px-3 py-1.5 text-[12px] font-medium hover:border-action hover:text-action">
                     {t.name}
                     <span className="text-gray-3">{t.courses}</span>
                   </Link>

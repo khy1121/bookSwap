@@ -68,3 +68,38 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* ---- 모션: 작고 빠르게. reduced-motion이면 위의 규칙으로 전부 꺼진다 ---- */
+@keyframes fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes shimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+.anim-fade-up { animation: fade-up 240ms cubic-bezier(.2,.7,.2,1) both; }
+.anim-sheet-up { animation: sheet-up 260ms cubic-bezier(.2,.7,.2,1) both; }
+.anim-fade-in { animation: fade-in 180ms ease-out both; }
+.anim-toast { animation: toast-in 220ms cubic-bezier(.2,.7,.2,1) both; }
+.stagger > * { animation: fade-up 240ms cubic-bezier(.2,.7,.2,1) both; }
+.stagger > *:nth-child(2) { animation-delay: 30ms; }
+.stagger > *:nth-child(3) { animation-delay: 60ms; }
+.stagger > *:nth-child(4) { animation-delay: 90ms; }
+.stagger > *:nth-child(5) { animation-delay: 120ms; }
+.stagger > *:nth-child(n+6) { animation-delay: 150ms; }
+
+/* 눌림 반응: 버튼·링크 공통 */
+.press { transition: transform 120ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease; }
+.press:active { transform: scale(0.98); }
+.row { transition: background-color 140ms ease; }
+.row:hover { background-color: var(--hs-bg-soft); }
+
+/* 스켈레톤 */
+.skeleton {
+  background: linear-gradient(90deg, #f1f1f1 25%, #e6e6e6 37%, #f1f1f1 63%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 6px;
+}
+
+/* 하단 고정 바: 홈 인디케이터 여백 */
+.bottom-bar { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
