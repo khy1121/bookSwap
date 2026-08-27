@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { track } from "@/lib/events";
@@ -33,11 +34,13 @@ export async function signIn(_prev: ActionState, form: FormData): Promise<Action
 /** 학교 Google 계정 로그인 (hansung.ac.kr Google Workspace). 도메인은 hd 힌트 + DB 트리거로 이중 검사. */
 export async function signInWithGoogle(next = "/") {
   const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  // Supabase 허용 목록은 쿼리스트링까지 정확히 비교하므로 redirectTo에는 붙이지 않고, 돌아갈 경로는 쿠키로 전달
+  (await cookies()).set("bs_next", safeNext, { path: "/", maxAge: 600, httpOnly: true, sameSite: "lax" });
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm?next=${encodeURIComponent(safeNext)}`,
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm`,
       queryParams: { hd: "hansung.ac.kr", prompt: "select_account" },
     },
   });

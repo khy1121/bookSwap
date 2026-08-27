@@ -69,7 +69,8 @@ build 통: **3개** ✓
 | 교재 표지 (`npm run covers`, 카카오 책 검색) | ✅ 2026-08-27 — 391 고유 교재명 중 162 매칭. 사람 눈으로 전수 감사(`docs/startup/cover-audit.md`) 후 규칙 보강: 『』 안 제목 우선, 3글자 이름 세그먼트 건너뜀, TBA/pdf/강의노트 등 금지어, 한/영 동의어 질의 병합, 토큰 일치 ≥75% + 짧은 질의는 거의 완전일치. 재실행: `npm run covers -- --reset` |
 | 판매자 실물 사진 (Storage `listing-photos`, 최대 3장) | ✅ 코드·버킷·RLS — **업로드 e2e 미검증** |
 | 에러 알림(Sentry) | ⏳ 미설정 |
-| 커스텀 SMTP (Resend 등) | ⏳ **배포 전 필수** — 기본 SMTP는 시간당 2~4통 제한, 테스트 중 이미 걸림. 연결하면 이메일 템플릿 편집도 가능 |
+| 학교 Google 계정 로그인 (PR #16, 개인정보처리방침 #17) | ✅ 2026-08-28 로컬 e2e 성공. 한성대 메일 = Google Workspace → OAuth hd=hansung.ac.kr + DB 트리거 이중 검사. 프로덕션은 Vercel `NEXT_PUBLIC_GOOGLE_LOGIN=on` 후 표시 |
+| 커스텀 SMTP (Brevo 등) | ⏳ Google 로그인이 주 수단이 되어 **보조**로 격하. 메일 링크는 예외용 |
 | 피드백 채널 링크 | ⏳ `NEXT_PUBLIC_FEEDBACK_URL`에 오픈채팅 넣기 |
 | 배포(Vercel) | ⏳ |
 
