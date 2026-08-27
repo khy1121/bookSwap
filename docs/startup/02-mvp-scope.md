@@ -8,7 +8,7 @@
 | 학교 이메일(@hansung.ac.kr) 인증 로그인 | **build** | 포기 불가 항목(인증/권한). 같은 학교 보장이 신뢰의 근거 | - |
 | 매수자→판매자 연락 (카톡 오픈채팅 링크 노출) | **build** | 거래 성사의 필수 경로. 자체 채팅 대신 링크 | - |
 | 과목·지정교재 카탈로그 | manual→**스크립트** | `scripts/crawl_hansung_textbooks.py`로 학기마다 1회 실행 (2026-08-27 확보, 538 과목·교수 조합) | 학기 시작 전 재실행 |
-| 자체 채팅 | 제외 | 오픈채팅 링크로 충분 | 링크 방식 불만 5건 |
+| 자체 채팅 | ~~제외~~ → **build** (2026-08-27 사용자 결정, PR #13) | 1:1 텍스트+사진, Realtime, 안 읽음 배지. 푸시·읽음표시·차단 없음 | 되살릴 조건 없이 선반영 — 사용률은 `chat_started`/`chat_message` 이벤트로 관측 |
 | 안전결제/에스크로 | 제외 | 직거래(교내) 전제 | 사기 신고 1건 발생 시 재검토 |
 | 판본 불일치 경고 | fake | 카탈로그의 주교재·판본과 매물 비교해 "교수 지정 교재와 일치" 뱃지. 초기엔 내가 수동 확인 | 헛구매 신고 3건 (카탈로그 확보로 build 승격 비용↓) |
 | 가격 추천 | 제외 | 데이터 없음 | 거래 50건 누적 |
@@ -92,3 +92,10 @@ build 통: **3개** ✓
 - 이미지: HEIC/손상 파일 안내, 25MB 원본 제한, 표지·사진 로드 실패 시 플레이스홀더 폴백
 - 프록시: env 누락·세션 갱신 실패 시에도 페이지는 렌더
 - 알려진 것: `loading.tsx` 스트리밍 때문에 notFound() 페이지가 HTTP 200으로 내려감(UI는 404 화면). SEO 필요해지면 loading 제거 또는 존재 확인 선행
+
+## 채팅 (PR #13)
+- `supabase/005_chat.sql`: chat_rooms(매물×구매자 unique), chat_messages(body≤500 또는 image_url), RLS(참여자만), Realtime 발행, `chat-photos` 버킷(참여자만 업로드), `my_chat_rooms()`/`my_unread_count()` RPC
+- 서버 액션 `chats/actions.ts`: openChat(판매자 본인·완료 거래 거부) / sendMessage(분당 20건, 사진 3MB) / markRead
+- `ChatRoom.tsx`: 브라우저 Supabase 클라이언트로 postgres_changes 구독 + 끊기면 15초 폴링, 사진은 클라이언트 축소 후 전송
+- 매물 상세: "○○와 채팅하기"가 주 버튼, 오픈채팅·에타 연락처는 보조
+- 이벤트: chat_started, chat_message(has_image). 활성화 지표를 contact_clicked → chat_started로 바꿀지는 9/10 판정 때 결정

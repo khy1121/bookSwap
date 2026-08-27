@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { revealContact } from "@/app/actions";
+import { openChat } from "@/app/chats/actions";
 import { KIND_BG, ROLE_LABEL } from "@/lib/types";
 
 export function RevealContact({ listingId, loggedIn, kind }: { listingId: string; loggedIn: boolean; kind: "sell" | "buy" }) {
@@ -60,14 +61,19 @@ export function RevealContact({ listingId, loggedIn, kind }: { listingId: string
           </div>
         ) : (
           <>
+            <form action={openChat.bind(null, listingId)}>
+              <button type="submit" className={`press flex h-12 w-full items-center justify-center rounded-xl text-[15px] font-bold text-white ${KIND_BG[kind]}`}>
+                <span aria-hidden className="icon-[lucide--message-circle] mr-1.5 size-4" />{role}와 채팅하기
+              </button>
+            </form>
             <button disabled={pending}
               onClick={() => start(async () => {
                 const r = await revealContact(listingId);
                 if (r.error) setError(r.error);
                 else setContact(r.contact ?? null);
               })}
-              className={`press h-12 w-full rounded-xl text-[15px] font-bold text-white disabled:opacity-60 ${KIND_BG[kind]}`}>
-              {pending ? <><span aria-hidden className="icon-[lucide--loader-circle] mr-1.5 size-4 animate-spin" />불러오는 중…</> : <><span aria-hidden className="icon-[lucide--message-circle] mr-1.5 size-4" />{role}에게 연락하기</>}
+              className="press mt-2 h-10 w-full rounded-xl border border-line bg-white text-[13px] font-semibold text-gray-1 disabled:opacity-60">
+              {pending ? <><span aria-hidden className="icon-[lucide--loader-circle] mr-1.5 size-4 animate-spin" />불러오는 중…</> : <><span aria-hidden className="icon-[lucide--external-link] mr-1.5 size-4" />오픈채팅·에타 연락처 보기</>}
             </button>
             {error && <p className="mt-2 text-center text-[12px] text-red-600">{error}</p>}
           </>
