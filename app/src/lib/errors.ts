@@ -8,7 +8,7 @@ export function toMessage(err: unknown, fallback = "잠시 후 다시 시도해 
 
   // Auth
   if (msg.includes("rate limit")) return "로그인 메일을 너무 자주 요청했습니다. 잠시 후 다시 시도해 주세요.";
-  if (msg.includes("hansung.ac.kr")) return "@hansung.ac.kr 이메일만 사용할 수 있습니다.";
+  if (msg.includes("hansung.ac.kr") || msg.includes("database error saving new user")) return "한성대 계정(@hansung.ac.kr)만 사용할 수 있습니다. 학교 Google 계정을 선택해 주세요.";
   if (msg.includes("invalid email") || msg.includes("unable to validate email")) return "이메일 형식을 확인해 주세요.";
   if (msg.includes("jwt") || msg.includes("session") || e?.status === 401) return "로그인이 만료되었습니다. 다시 로그인해 주세요.";
 

@@ -30,6 +30,25 @@ export async function signIn(_prev: ActionState, form: FormData): Promise<Action
   return { ok: true, message: `${email} 로 로그인 링크를 보냈습니다. 메일함을 확인하세요.` };
 }
 
+/** 학교 Google 계정 로그인 (hansung.ac.kr Google Workspace). 도메인은 hd 힌트 + DB 트리거로 이중 검사. */
+export async function signInWithGoogle(next = "/") {
+  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm?next=${encodeURIComponent(safeNext)}`,
+      queryParams: { hd: "hansung.ac.kr", prompt: "select_account" },
+    },
+  });
+  if (error || !data.url) {
+    console.error("[google]", error?.message);
+    redirect(`/login?error=${encodeURIComponent("Google 로그인을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.")}`);
+  }
+  await track("login_google_start", {});
+  redirect(data.url);
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
