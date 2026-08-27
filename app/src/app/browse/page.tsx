@@ -41,7 +41,7 @@ export default async function BrowsePage() {
     <div className="pb-8">
       <section className="px-4 pt-5 pb-3">
         <h1 className="text-[20px] font-bold tracking-tight">학과·트랙으로 찾기</h1>
-        <p className="mt-1 text-[13px] text-gray-2">2026-2학기 개설 기준 · 수업계획서에 교재가 있는 과목만</p>
+        <p className="mt-1 text-[13px] text-gray-2">2026-2학기 수업계획서 기준 · 교수가 적은 주교재를 함께 표시</p>
       </section>
       {order.map((title) => {
         const list = (groups.get(title) ?? []).sort((a, b) => a.name.localeCompare(b.name, "ko"));
