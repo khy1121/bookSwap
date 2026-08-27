@@ -66,6 +66,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             </a>
             으로 알려주세요.
           </p>
+          <p className="mt-1">
+            <Link href="/privacy" className="underline">개인정보처리방침</Link>
+          </p>
         </footer>
         <Suspense fallback={null}>
           <Toast />
