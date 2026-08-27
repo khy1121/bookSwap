@@ -75,3 +75,12 @@ build 통: **3개** ✓
 
 `npm run build` · `npm run lint` · `tsc --noEmit` 통과. **2026-08-27 e2e 검증 완료**: 매직링크 로그인 → 프로필 트리거 → 검색 → 판매/구매 등록 → 즉시가 표시 → 이벤트(login_success, search, listing_created) 기록. 미검증: `contact_clicked`(두 번째 계정 필요), 거래완료 처리.
 테스트 중 로그인 링크는 `auth.admin.generateLink`로 생성하면 SMTP 제한을 우회할 수 있음.
+
+## 스코프 밖 추가분 (사용자 결정, 2026-08-27 저녁)
+| 기능 | PR | 비고 |
+|---|---|---|
+| 교재 표지 자동 수집 + 판매자 실물 사진 | 초기 push | 표지 161종·355분반, 사진 e2e 통과 |
+| 내 거래 수정·삭제 | #2 | RLS delete 정책(003) 필요 |
+| 학과·트랙 카테고리 탐색 `/browse` | #3 | 분반별 소속 학과 전체 저장(004), 컴퓨터공학부 101분반 |
+
+배포: https://book-swap-virid.vercel.app (Vercel, Root=app, `vercel.json` framework=nextjs). main 보호 + `verify` 필수 체크.
