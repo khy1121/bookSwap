@@ -4,6 +4,7 @@ import { track } from "@/lib/events";
 import type { Course, ListingPublic } from "@/lib/types";
 import { KIND_COLOR, KIND_LABEL, firstLine, won } from "@/lib/types";
 import { Cover } from "@/components/Cover";
+import { flattenMajors, loadMajorTree } from "@/lib/majors";
 
 export default async function Home(props: PageProps<"/">) {
   const { q = "" } = await props.searchParams;
@@ -34,6 +35,16 @@ export default async function Home(props: PageProps<"/">) {
   const grouped = new Map<string, Course[]>();
   for (const c of courses) grouped.set(c.course, [...(grouped.get(c.course) ?? []), c]);
 
+  // 학과·트랙 이름도 같이 찾아준다 ("컴퓨터" → 컴퓨터공학부)
+  let majorHits: ReturnType<typeof flattenMajors> = [];
+  if (query) {
+    const n = query.toLowerCase().replace(/\s+/g, "");
+    majorHits = flattenMajors(await loadMajorTree(supabase))
+      .filter((m) => m.name.toLowerCase().replace(/\s+/g, "").includes(n))
+      .sort((a, b) => (a.kind === b.kind ? a.name.localeCompare(b.name, "ko") : a.kind === "dept" ? -1 : 1))
+      .slice(0, 6);
+  }
+
   return (
     <div className="pb-8">
       <section className="px-4 pt-6 pb-4">
@@ -57,6 +68,25 @@ export default async function Home(props: PageProps<"/">) {
           학과·트랙으로 찾기 →
         </Link>
       </section>
+
+      {majorHits.length > 0 && (
+        <section className="border-t-8 border-surface">
+          <h2 className="px-4 pt-5 pb-2 text-[15px] font-bold">
+            학과·트랙 <span className="text-blue">{majorHits.length}</span>
+          </h2>
+          <ul className="flex flex-wrap gap-1.5 px-4 pb-4">
+            {majorHits.map((m) => (
+              <li key={m.code}>
+                <Link href={`/browse/${m.code}`}
+                  className="inline-flex items-center gap-1 rounded-full border border-line bg-white px-3 py-1.5 text-[12px] font-medium hover:border-action hover:text-action">
+                  {m.name}
+                  <span className="text-gray-3">{m.kind === "track" && m.parentName ? `· ${m.parentName}` : `과목 ${m.courses}`}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {query && (
         <section className="border-t-8 border-surface">
