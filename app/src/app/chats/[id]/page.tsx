@@ -5,7 +5,7 @@ import { must } from "@/lib/errors";
 import { Cover } from "@/components/Cover";
 import { KIND_LABEL, won } from "@/lib/types";
 import { ChatRoom } from "./ChatRoom";
-import { markRead, type ChatMessage } from "../actions";
+import type { ChatMessage } from "../actions";
 
 export default async function ChatRoomPage(props: PageProps<"/chats/[id]">) {
   const { id } = await props.params;
@@ -18,7 +18,8 @@ export default async function ChatRoomPage(props: PageProps<"/chats/[id]">) {
 
   const { data: l } = await supabase.from("listings_public").select("id, book_title, kind, status, price, course, prof, cover_url, photos").eq("id", room.listing_id).single();
   const messages = (must(await supabase.from("chat_messages").select("*").eq("room_id", id).order("created_at").limit(200), "메시지") ?? []) as ChatMessage[];
-  await markRead(id);
+  // 읽음 처리: 렌더 중이라 revalidatePath는 못 쓰고 DB만 갱신 (목록 배지는 다음 요청에 반영)
+  await supabase.from("chat_messages").update({ read_at: new Date().toISOString() }).eq("room_id", id).neq("sender_id", user.id).is("read_at", null);
 
   const iAmBuyer = room.buyer_id === user.id;
   const counterpartRole = iAmBuyer ? "판매자" : "구매자";

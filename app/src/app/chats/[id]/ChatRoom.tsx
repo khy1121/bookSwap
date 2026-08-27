@@ -27,7 +27,14 @@ export function ChatRoom({
   // Realtime: 이 방의 새 메시지를 받는다 (RLS로 참여자만). 내가 보낸 건 응답으로 이미 넣었으니 중복 제거.
   useEffect(() => {
     const sb = supabaseBrowser();
-    const ch = sb
+    let ch: ReturnType<typeof sb.channel> | null = null;
+    let cancelled = false;
+    (async () => {
+      // Realtime은 RLS를 쓰므로 세션 토큰을 먼저 붙여야 구독이 열린다
+      const { data } = await sb.auth.getSession();
+      if (cancelled) return;
+      if (data.session) sb.realtime.setAuth(data.session.access_token);
+      ch = sb
       .channel(`room:${roomId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `room_id=eq.${roomId}` }, (p: { new: ChatMessage }) => {
         const m = p.new as ChatMessage;
@@ -35,7 +42,8 @@ export function ChatRoom({
         if (m.sender_id !== me) void markRead(roomId);
       })
       .subscribe((status: string) => setLive(status === "SUBSCRIBED" ? "on" : status === "CLOSED" || status === "CHANNEL_ERROR" || status === "TIMED_OUT" ? "off" : "connecting"));
-    return () => { void sb.removeChannel(ch); };
+    })();
+    return () => { cancelled = true; if (ch) void sb.removeChannel(ch); };
   }, [roomId, me]);
 
   // 실시간이 끊겨도 놓치지 않게 15초마다 보충 조회
@@ -102,7 +110,7 @@ export function ChatRoom({
                   {m.image_url && (
                     <a href={m.image_url} target="_blank" rel="noreferrer">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={m.image_url} alt="보낸 사진" className="block max-h-72 w-full object-cover" loading="lazy" />
+                      <img src={m.image_url} alt="보낸 사진" className="block max-h-72 min-h-24 w-full min-w-40 bg-surface object-cover" loading="lazy" />
                     </a>
                   )}
                   {m.body && <p className="whitespace-pre-wrap break-words px-3.5 py-2 text-[14px] leading-relaxed">{m.body}</p>}
