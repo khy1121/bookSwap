@@ -2,6 +2,7 @@ import { type EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { track } from "@/lib/events";
+import { toMessage } from "@/lib/errors";
 
 /**
  * 두 가지 매직링크 형식을 모두 처리한다.
@@ -19,6 +20,14 @@ export async function GET(request: NextRequest) {
   const to = request.nextUrl.clone();
   to.search = "";
 
+  // OAuth 제공자가 오류를 돌려준 경우 (도메인 밖 계정 등)
+  const providerError = searchParams.get("error_description") ?? searchParams.get("error");
+  if (providerError && !code && !token_hash) {
+    to.pathname = "/login";
+    to.searchParams.set("error", toMessage({ message: providerError }, "Google 로그인이 취소되었거나 실패했습니다."));
+    return NextResponse.redirect(to);
+  }
+
   const supabase = await createClient();
   let ok = false;
   if (code) {
@@ -34,6 +43,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(to);
   }
   to.pathname = "/login";
-  to.searchParams.set("error", "링크가 만료되었거나 잘못되었습니다. 다시 요청하세요.");
+  to.searchParams.set("error", code ? "학교 계정으로 로그인하지 못했습니다. 한성대 Google 계정(@hansung.ac.kr)인지 확인해 주세요." : "링크가 만료되었거나 잘못되었습니다. 다시 요청하세요.");
   return NextResponse.redirect(to);
 }

@@ -8,7 +8,7 @@ export function LoginForm({ next, referral }: { next: string; referral: string }
 
   if (state.ok) {
     return (
-      <div className="mt-6 rounded-lg bg-surface-soft p-4">
+      <div className="rounded-lg bg-surface-soft p-4">
         <p className="text-[14px] font-semibold text-navy">메일을 보냈습니다</p>
         <p className="mt-1 text-[13px] leading-relaxed text-gray-2">{state.message}</p>
         <p className="mt-2 text-[11px] text-gray-3">안 보이면 스팸함을 확인하세요. 링크는 한 번만 쓸 수 있습니다.</p>
@@ -17,7 +17,7 @@ export function LoginForm({ next, referral }: { next: string; referral: string }
   }
 
   return (
-    <form action={action} className="mt-6 space-y-3">
+    <form action={action} className="space-y-3">
       <input type="hidden" name="next" value={next} />
       <input type="hidden" name="referral" value={referral} />
       <input

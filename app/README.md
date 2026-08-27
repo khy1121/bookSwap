@@ -20,6 +20,16 @@
    - Redirect URLs: `http://localhost:3000/auth/confirm`, `https://<vercel-domain>/auth/confirm`
 6. **Project Settings → API** 에서 `Project URL`, `anon public`, `service_role` 키 복사
 
+### 학교 Google 계정 로그인 (권장 — 메일 발송 불필요)
+한성대 메일은 Google Workspace(MX: aspmx.l.google.com)라 "Google로 로그인"이 곧 학교 계정 로그인이다. 도메인은 `hd=hansung.ac.kr` 힌트 + `handle_new_user` 트리거로 이중 검사.
+1. Google Cloud Console → 프로젝트 생성 → **APIs & Services → OAuth consent screen**: External, 앱 이름 BookSwap, 지원 이메일, 범위는 email/profile/openid만 → **Publish** (기본 범위만이라 검수 불필요)
+2. **Credentials → Create → OAuth client ID → Web application**
+   - Authorized JavaScript origins: `https://book-swap-virid.vercel.app`, `http://localhost:3000`
+   - Authorized redirect URIs: `https://kpnjqozkheesugiwppum.supabase.co/auth/v1/callback`
+3. Supabase → Authentication → Sign In / Providers → **Google** → Enable, Client ID/Secret 입력 → Save
+4. 로그인 페이지의 Google 버튼이 동작. 도메인 밖 계정은 트리거가 거부 → "한성대 계정만" 안내
+   - 켜려면 Vercel 환경변수 `NEXT_PUBLIC_GOOGLE_LOGIN=on` (설정 전엔 버튼 숨김)
+
 ## 2. 로컬 실행
 
 ```bash
