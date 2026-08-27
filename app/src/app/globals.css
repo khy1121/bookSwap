@@ -1,5 +1,6 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
 @import "tailwindcss";
+@plugin "@iconify/tailwind4";
 
 /* 한성대 디자인 시스템 (hansung.ac.kr CSS에서 추출) */
 :root {
@@ -34,7 +35,7 @@
   --color-surface: var(--hs-bg);
   --color-surface-soft: var(--hs-bg-soft);
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-mono: "Pretendard Variable", Pretendard, ui-monospace, monospace;
 }
 
 html {
@@ -51,9 +52,11 @@ body {
 
 /* 시그니처: 수강편람 시간표 셀을 닮은 과목 코드 라벨 */
 .course-code {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
   font-size: 11px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   color: var(--hs-navy);
   background: var(--hs-bg-soft);
   border-left: 3px solid var(--hs-blue);
@@ -103,3 +106,6 @@ body {
 
 /* 하단 고정 바: 홈 인디케이터 여백 */
 .bottom-bar { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+
+/* Iconify(lucide) 아이콘 공통: 인라인 정렬, 현재 글자색 */
+[class*="icon-["] { display: inline-block; vertical-align: -0.15em; flex-shrink: 0; }

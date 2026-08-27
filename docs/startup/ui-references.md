@@ -44,3 +44,9 @@
 - 금융기관 선택 시트: 아이콘 배지 + 초성(ㄱㄴㄷ) 고정 헤더 → `lib/majorIcon.ts` 계열 아이콘·색, `chosung()`
 - 당근 카테고리 칩: 학과 상세 상단 트랙 필터 바(가로 스크롤, sticky)
 - 검색은 목록 위 한 칸, 입력 중엔 탭 숨기고 전체에서 즉시 필터
+
+## 아이콘·브랜드·서체 (PR #9)
+- Iconify: `@iconify/tailwind4` + `@iconify-json/lucide`. CSS 마스크 방식이라 서버 렌더에서도 나오고 클라이언트 JS 증가 없음. 사용: `<span className="icon-[lucide--search] size-4" />`
+- 배치: 헤더(학과 list / 내 거래 user / 로그아웃 log-out / 로그인 mail), 검색(search·x·loader), 계열 배지(cpu·palette·trending-up·book-open·scissors·landmark·drama·graduation-cap·school), 액션(pencil·check·trash-2), 연락(copy·external-link·message-circle), 사진(image-plus), 오류(triangle-alert·package-x), 목록 chevron-right
+- 브랜드: BookSwap (워드마크 + book-open 아이콘, HANSUNG 서브)
+- 서체: Pretendard Variable 단일. Geist Mono 제거, 과목 코드는 Pretendard tabular-nums

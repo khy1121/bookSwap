@@ -60,7 +60,7 @@ export default async function Home(props: PageProps<"/">) {
           <SearchBox defaultValue={query} />
         </div>
         <Link href="/browse" className="press mt-3 inline-flex items-center gap-1 rounded-full text-[13px] font-medium text-action">
-          학과·트랙으로 찾기 →
+          <span aria-hidden className="icon-[lucide--list] size-4" />학과·트랙으로 찾기<span aria-hidden className="icon-[lucide--chevron-right] size-4" />
         </Link>
       </section>
 
@@ -151,7 +151,7 @@ export default async function Home(props: PageProps<"/">) {
                   </span>
                 </span>
                 <span className="shrink-0 text-[14px] font-semibold tabular-nums">{won(l.price)}</span>
-                <span aria-hidden className="text-gray-3">›</span>
+                <span aria-hidden className="icon-[lucide--chevron-right] size-4 text-gray-3" />
               </Link>
             </li>
           ))}

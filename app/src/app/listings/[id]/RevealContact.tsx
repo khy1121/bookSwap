@@ -30,7 +30,7 @@ export function RevealContact({ listingId, loggedIn, kind }: { listingId: string
         {!loggedIn ? (
           <Link href={`/login?next=/listings/${listingId}`}
             className={`press flex h-12 items-center justify-center rounded-xl text-[15px] font-bold text-white ${KIND_BG[kind]}`}>
-            로그인하고 {role} 연락처 보기
+            <span aria-hidden className="icon-[lucide--mail] mr-1.5 size-4" />로그인하고 {role} 연락처 보기
           </Link>
         ) : contact ? (
           <div className="anim-fade-up rounded-xl border border-line p-3">
@@ -48,13 +48,13 @@ export function RevealContact({ listingId, loggedIn, kind }: { listingId: string
               )}
               <button type="button" onClick={copy}
                 className="press h-8 shrink-0 rounded-full border border-line bg-white px-3 text-[12px] font-medium text-gray-1 hover:border-action hover:text-action">
-                {copied ? "복사됨 ✓" : "복사"}
+                {copied ? <><span aria-hidden className="icon-[lucide--check] mr-1 size-3.5" />복사됨</> : <><span aria-hidden className="icon-[lucide--copy] mr-1 size-3.5" />복사</>}
               </button>
             </div>
             {isUrl && (
               <a href={contact} target="_blank" rel="noreferrer"
                 className={`press mt-3 flex h-11 items-center justify-center rounded-xl text-[14px] font-bold text-white ${KIND_BG[kind]}`}>
-                오픈채팅 열기 ↗
+                <span aria-hidden className="icon-[lucide--external-link] mr-1.5 size-4" />오픈채팅 열기
               </a>
             )}
           </div>
@@ -67,7 +67,7 @@ export function RevealContact({ listingId, loggedIn, kind }: { listingId: string
                 else setContact(r.contact ?? null);
               })}
               className={`press h-12 w-full rounded-xl text-[15px] font-bold text-white disabled:opacity-60 ${KIND_BG[kind]}`}>
-              {pending ? "불러오는 중…" : `${role}에게 연락하기`}
+              {pending ? <><span aria-hidden className="icon-[lucide--loader-circle] mr-1.5 size-4 animate-spin" />불러오는 중…</> : <><span aria-hidden className="icon-[lucide--message-circle] mr-1.5 size-4" />{role}에게 연락하기</>}
             </button>
             {error && <p className="mt-2 text-center text-[12px] text-red-600">{error}</p>}
           </>
