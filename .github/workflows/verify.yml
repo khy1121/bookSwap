@@ -1,0 +1,32 @@
+# PR과 main push마다 lint · 타입체크 · 빌드. Branch protection에서 "verify"를 required check로 지정하면
+# 통과 못 한 코드는 main에 merge될 수 없고, 따라서 Vercel 프로덕션 배포도 일어나지 않는다.
+name: verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+defaults:
+  run:
+    working-directory: app
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      # 빌드에만 필요한 공개 값. 실제 키는 Vercel 환경변수에만 둔다.
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm run build
