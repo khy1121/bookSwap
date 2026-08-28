@@ -7,6 +7,7 @@ import { createClient, getUser } from "@/lib/supabase/server";
 import { track } from "@/lib/events";
 import { CONDITIONS } from "@/lib/types";
 import { LIMITS, toMessage } from "@/lib/errors";
+import { reportError } from "@/lib/report";
 
 const DOMAIN = "@hansung.ac.kr";
 
@@ -26,7 +27,7 @@ export async function signIn(_prev: ActionState, form: FormData): Promise<Action
       data: { referral_source: referral || null },
     },
   });
-  if (error) { console.error("[signIn]", error.message); return { error: toMessage(error) }; }
+  if (error) { await reportError("signIn", error); return { error: toMessage(error) }; }
   await track("login_link_sent", { referral });
   return { ok: true, message: `${email} 로 로그인 링크를 보냈습니다. 메일함을 확인하세요.` };
 }
@@ -45,7 +46,7 @@ export async function signInWithGoogle(next = "/") {
     },
   });
   if (error || !data.url) {
-    console.error("[google]", error?.message);
+    await reportError("google", error ?? new Error("no url"));
     redirect(`/login?error=${encodeURIComponent("Google 로그인을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.")}`);
   }
   await track("login_google_start", {});
@@ -96,7 +97,7 @@ async function uploadPhotos(
     const ext = f.type === "image/png" ? "png" : f.type === "image/webp" ? "webp" : "jpg";
     const path = `${userId}/${Date.now()}-${i}.${ext}`;
     const { error } = await supabase.storage.from("listing-photos").upload(path, f, { contentType: f.type });
-    if (error) { console.error("[upload]", error.message); return { error: `사진 업로드 실패: ${toMessage(error)}` }; }
+    if (error) { await reportError("upload", error, {}, userId); return { error: `사진 업로드 실패: ${toMessage(error)}` }; }
     urls.push(supabase.storage.from("listing-photos").getPublicUrl(path).data.publicUrl);
   }
   return { urls };
@@ -127,7 +128,7 @@ export async function createListing(_prev: ActionState, form: FormData): Promise
     .insert({ user_id: user.id, ...fields, photos })
     .select("id")
     .single();
-  if (error) { console.error("[createListing]", error.code, error.message); return { error: toMessage(error) }; }
+  if (error) { await reportError("createListing", error, {}, user.id); return { error: toMessage(error) }; }
 
   await track("listing_created", { kind: fields.kind, course_id: fields.course_id, has_price: fields.price != null, photos: photos.length });
   revalidatePath("/");
@@ -158,7 +159,7 @@ export async function updateListing(listingId: string, _prev: ActionState, form:
   }
 
   const { error } = await supabase.from("listings").update({ ...fields, photos }).eq("id", listingId).eq("user_id", user.id);
-  if (error) { console.error("[updateListing]", error.code, error.message); return { error: toMessage(error) }; }
+  if (error) { await reportError("updateListing", error, {}, user.id); return { error: toMessage(error) }; }
 
   await track("listing_updated", { listing_id: listingId, kind: fields.kind });
   revalidatePath("/");
@@ -181,11 +182,11 @@ export async function deleteListing(listingId: string) {
     .filter((p): p is string => !!p);
   if (paths.length) {
     const { error: rmErr } = await supabase.storage.from("listing-photos").remove(paths);
-    if (rmErr) console.error("[deleteListing] photo cleanup", rmErr.message); // 사진 정리 실패는 삭제를 막지 않는다
+    if (rmErr) await reportError("deleteListing.photos", rmErr, {}, user.id); // 사진 정리 실패는 삭제를 막지 않는다
   }
 
   const { data: deleted, error } = await supabase.from("listings").delete().eq("id", listingId).eq("user_id", user.id).select("id");
-  if (error) { console.error("[deleteListing]", error.code, error.message); redirect("/my?toast=error"); }
+  if (error) { await reportError("deleteListing", error, {}, user.id); redirect("/my?toast=error"); }
   if (!deleted?.length) redirect("/my?toast=forbidden"); // RLS에 막히면 0건
 
   await track("listing_deleted", { listing_id: listingId });
@@ -212,7 +213,7 @@ export async function markDone(listingId: string) {
   if (!user) redirect("/login");
   const supabase = await createClient();
   const { data: updated, error } = await supabase.from("listings").update({ status: "done" }).eq("id", listingId).eq("user_id", user.id).select("id");
-  if (error) { console.error("[markDone]", error.message); redirect(`/listings/${listingId}?toast=error`); }
+  if (error) { await reportError("markDone", error, {}, user.id); redirect(`/listings/${listingId}?toast=error`); }
   if (!updated?.length) redirect(`/listings/${listingId}?toast=forbidden`);
   await track("listing_done", { listing_id: listingId });
   revalidatePath("/");
@@ -222,7 +223,7 @@ export async function markDone(listingId: string) {
 }
 
 /** 클라이언트에서 오는 계측 이벤트. 허용 목록 밖은 무시 (임의 이벤트 주입 방지). */
-const CLIENT_EVENTS = new Set(["pwa_prompt_shown", "pwa_prompt_dismissed", "pwa_install_choice", "pwa_installed", "pwa_guide_shown", "app_update_prompted", "app_update_applied", "push_permission", "push_clicked"]);
+const CLIENT_EVENTS = new Set(["pwa_prompt_shown", "pwa_prompt_dismissed", "pwa_install_choice", "pwa_installed", "pwa_guide_shown", "app_update_prompted", "app_update_applied", "push_permission", "push_clicked", "client_error"]);
 export async function logEvent(event: string, props: Record<string, unknown> = {}) {
   if (!CLIENT_EVENTS.has(event)) return;
   await track(event, props);

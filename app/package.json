@@ -9,7 +9,8 @@
     "lint": "eslint",
     "seed:courses": "tsx --env-file=.env.local scripts/seed-courses.ts",
     "covers": "tsx --env-file=.env.local scripts/fetch-covers.ts",
-    "notify": "tsx --env-file=.env.local scripts/notify.ts"
+    "notify": "tsx --env-file=.env.local scripts/notify.ts",
+    "errors": "tsx --env-file=.env.local scripts/errors.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",

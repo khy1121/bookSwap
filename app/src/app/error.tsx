@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { logEvent } from "@/app/actions";
 
 /** 페이지 렌더/데이터 오류 경계. 서버에서 던진 메시지는 이미 한국어로 정리되어 온다. */
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error("[page error]", error.digest ?? "", error.message);
+    void logEvent("client_error", { digest: error.digest ?? null, message: String(error.message).slice(0, 300), path: typeof location !== "undefined" ? location.pathname : null });
   }, [error]);
 
   const friendly = error.message && !/^\s*$/.test(error.message) && !error.message.includes("Server Components render")

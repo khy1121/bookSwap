@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
+import { WatchButton } from "@/components/WatchButton";
 import { must } from "@/lib/errors";
 import type { Course, ListingPublic } from "@/lib/types";
 import { KIND_LABEL, firstLine, won } from "@/lib/types";
@@ -40,16 +41,18 @@ function Rows({ title, list, empty }: { title: string; list: ListingPublic[]; em
 export default async function CoursePage(props: PageProps<"/courses/[id]">) {
   const { id } = await props.params;
   const supabase = await createClient();
-  const { data: course } = await supabase.from("courses").select("*").eq("id", id).single<Course>();
+  const [{ data: course }, user, listRes, { data: watchCount }] = await Promise.all([
+    supabase.from("courses").select("*").eq("id", id).single<Course>(),
+    getUser(),
+    supabase.from("listings_public").select("*").eq("course_id", id).eq("status", "open").order("created_at", { ascending: false }),
+    supabase.rpc("course_watch_count", { p_course_id: id }),
+  ]);
   if (!course) notFound();
-
-  const data = must(await supabase
-    .from("listings_public")
-    .select("*")
-    .eq("course_id", id)
-    .eq("status", "open")
-    .order("created_at", { ascending: false }), "매물 목록");
-  const listings = (data ?? []) as ListingPublic[];
+  const listings = (must(listRes, "매물 목록") ?? []) as ListingPublic[];
+  const watching = user
+    ? !!(await supabase.from("course_watches").select("course_id").eq("course_id", id).eq("user_id", user.id).maybeSingle()).data
+    : false;
+  const waiting = typeof watchCount === "number" ? watchCount : 0;
   const sells = listings.filter((l) => l.kind === "sell");
   const buys = listings.filter((l) => l.kind === "buy");
   const lowestAsk = sells.map((l) => l.price).filter((p): p is number => p != null).sort((a, b) => a - b)[0];
@@ -92,6 +95,9 @@ export default async function CoursePage(props: PageProps<"/courses/[id]">) {
             <dd className="mt-0.5 text-[17px] font-bold tabular-nums text-sky">{highestBid != null ? won(highestBid) : "—"}</dd>
           </div>
         </dl>
+
+        {/* 수요 신호 + 알림 구독: 매물이 없어도 "기다리는 사람"이 보이게 */}
+        <WatchButton courseId={course.id} initialWatching={watching} initialCount={waiting} loggedIn={!!user} />
       </section>
 
       <Rows title="판매 중" list={sells} empty="아직 판매자가 없습니다. 이 책을 갖고 있다면 판매를 올려보세요." />
@@ -107,7 +113,7 @@ export default async function CoursePage(props: PageProps<"/courses/[id]">) {
             <span className="text-[15px] font-bold">{KIND_LABEL.buy}</span>
             <span className="text-right leading-tight">
               <span className="block text-[13px] font-semibold tabular-nums">{lowestAsk != null ? won(lowestAsk) : "가격 제안"}</span>
-              <span className="block text-[10px] opacity-80">{sells.length > 0 ? `판매자 ${sells.length}명` : "첫 구매자 되기"}</span>
+              <span className="block text-[10px] opacity-80">{sells.length > 0 ? `판매자 ${sells.length}명` : waiting > 0 ? `${waiting}명이 기다리는 중` : "첫 구매자 되기"}</span>
             </span>
           </Link>
           <Link
@@ -117,7 +123,7 @@ export default async function CoursePage(props: PageProps<"/courses/[id]">) {
             <span className="text-[15px] font-bold">{KIND_LABEL.sell}</span>
             <span className="text-right leading-tight">
               <span className="block text-[13px] font-semibold tabular-nums">{highestBid != null ? won(highestBid) : "가격 제안"}</span>
-              <span className="block text-[10px] opacity-80">{buys.length > 0 ? `구매자 ${buys.length}명` : "첫 판매자 되기"}</span>
+              <span className="block text-[10px] opacity-80">{buys.length > 0 ? `구매자 ${buys.length}명` : waiting > 0 ? `${waiting}명이 기다리는 중` : "첫 판매자 되기"}</span>
             </span>
           </Link>
         </div>

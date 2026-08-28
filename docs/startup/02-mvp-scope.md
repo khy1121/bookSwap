@@ -125,3 +125,5 @@ build 통: **3개** ✓
 - 2026-08-28: Supabase를 서울 리전 새 프로젝트(qlabeqipcjqgbihnuppf)로 이전, Vercel 함수 리전 icn1. 한국→DB 쿼리 ~300ms → ~70ms.
 
 - 2026-08-28: 속도 작업 — getUser/createClient 요청당 캐시, 홈·채팅방·매물 상세 쿼리 병렬화, sendMessage 검사 병렬화 + track은 after(), 채팅 낙관적 전송(임시 말풍선) + 폴링 3초(연결 시 20초 안전망), SW가 /_next/static·fonts·icons 캐시.
+
+- 2026-08-28: 론칭 준비 — (1) 과목 새 매물 알림: course_watches + course_watch_count/top_wanted_courses RPC(007), listings INSERT 트리거 → /api/push/listing, 과목 페이지 WatchButton(대기 N명), lib/usePush 훅으로 PushToggle 공용화. (2) 홈 "지금 찾는 교재" 섹션(구매 희망+대기 인원), 빈 상태 CTA를 구매 희망 등록 우선으로. (3) 서버 액션 오류를 events(event=error)로 기록(lib/report.ts), error.tsx는 client_error, `npm run errors -- [hours]`로 조회.
