@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { shrinkImage } from "@/lib/image";
 import { markRead, sendMessage, type ChatMessage } from "../actions";
@@ -23,6 +24,16 @@ export function ChatRoom({
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [live, setLive] = useState<"connecting" | "on" | "off">("connecting");
+  const router = useRouter();
+
+  // 방에 들어오면 읽음 처리 후 레이아웃(안 읽음 배지)을 새로 그린다. 서버 렌더 시점엔 배지가 먼저 계산돼 1이 남을 수 있어서.
+  useEffect(() => {
+    const t = setTimeout(async () => {
+      if (initial.some((m) => m.sender_id !== me && !m.read_at)) { await markRead(roomId); router.refresh(); }
+    }, 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomId]);
   const listRef = useRef<HTMLDivElement>(null);
   const [unseen, setUnseen] = useState(0); // 아래로 스크롤 안 한 상태에서 도착한 상대 메시지 수
   const atBottomRef = useRef(true);
@@ -45,12 +56,12 @@ export function ChatRoom({
         const m = p.new as ChatMessage;
         // 내가 보낸 게 서버 응답보다 먼저 도착하면 같은 내용의 임시 말풍선을 치운다
         setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev.filter((x) => !(x.pending && x.sender_id === m.sender_id && x.body === m.body && !x.image_url === !m.image_url)), m]));
-        if (m.sender_id !== me) void markRead(roomId);
+        if (m.sender_id !== me) void markRead(roomId).then(() => router.refresh());
       })
       .subscribe((status: string) => setLive(status === "SUBSCRIBED" ? "on" : status === "CLOSED" || status === "CHANNEL_ERROR" || status === "TIMED_OUT" ? "off" : "connecting"));
     })();
     return () => { cancelled = true; if (ch) void sb.removeChannel(ch); };
-  }, [roomId, me]);
+  }, [roomId, me, router]);
 
   // 실시간이 끊기면 3초마다, 붙어 있어도 안전망으로 20초마다 보충 조회 (탭이 숨겨져 있으면 쉰다)
   useEffect(() => {

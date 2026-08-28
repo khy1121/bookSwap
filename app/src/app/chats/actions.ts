@@ -85,7 +85,7 @@ export async function sendMessage(roomId: string, form: FormData): Promise<{ err
   if (error) { await reportError("sendMessage", error, { roomId }, user.id); return { error: toMessage(error) }; }
 
   after(() => track("chat_message", { room_id: roomId, has_image: !!image_url }));
-  revalidatePath("/chats");
+  revalidatePath("/", "layout"); // 목록·배지(레이아웃)까지 갱신
   return { message: data as ChatMessage };
 }
 
@@ -95,5 +95,5 @@ export async function markRead(roomId: string) {
   if (!user) return;
   const supabase = await createClient();
   await supabase.from("chat_messages").update({ read_at: new Date().toISOString() }).eq("room_id", roomId).neq("sender_id", user.id).is("read_at", null);
-  revalidatePath("/chats");
+  revalidatePath("/", "layout"); // 헤더·탭바의 안 읽음 배지는 루트 레이아웃에서 계산된다
 }
