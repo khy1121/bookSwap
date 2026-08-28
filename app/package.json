@@ -10,7 +10,8 @@
     "seed:courses": "tsx --env-file=.env.local scripts/seed-courses.ts",
     "covers": "tsx --env-file=.env.local scripts/fetch-covers.ts",
     "notify": "tsx --env-file=.env.local scripts/notify.ts",
-    "errors": "tsx --env-file=.env.local scripts/errors.ts"
+    "errors": "tsx --env-file=.env.local scripts/errors.ts",
+    "backup": "tsx --env-file=.env.local scripts/backup.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",
