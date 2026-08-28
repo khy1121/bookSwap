@@ -6,6 +6,7 @@ import { Cover } from "@/components/Cover";
 import { KIND_LABEL, won } from "@/lib/types";
 import { ChatRoom } from "./ChatRoom";
 import { PushToggle } from "@/components/PushToggle";
+import { ChatViewport } from "./ChatViewport";
 import type { ChatMessage } from "../actions";
 
 export default async function ChatRoomPage(props: PageProps<"/chats/[id]">) {
@@ -31,10 +32,10 @@ export default async function ChatRoomPage(props: PageProps<"/chats/[id]">) {
   const counterpartRole = iAmBuyer ? "판매자" : "구매자";
 
   return (
-    <div className="flex min-h-[calc(100dvh-3.5rem)] flex-col">
+    <ChatViewport>
       {/* 매물 카드 고정 */}
       {l && (
-        <Link href={`/listings/${l.id}`} className="row flex items-center gap-3 border-b border-line px-4 py-2.5">
+        <Link href={`/listings/${l.id}`} className="row flex shrink-0 items-center gap-3 border-b border-line px-4 py-2">
           <Cover src={l.photos?.[0] ?? l.cover_url} alt="" size="sm" />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[14px] font-semibold">{l.book_title}</span>
@@ -46,8 +47,8 @@ export default async function ChatRoomPage(props: PageProps<"/chats/[id]">) {
           <span aria-hidden className="icon-[lucide--chevron-right] size-4 text-gray-3" />
         </Link>
       )}
-      <div className="border-b border-line bg-surface px-4 py-2"><PushToggle compact /></div>
+      <div className="shrink-0 border-b border-line bg-surface px-4 py-1.5"><PushToggle compact /></div>
       <ChatRoom roomId={id} me={user.id} initial={messages} counterpartRole={counterpartRole} disabled={l?.status === "done"} />
-    </div>
+    </ChatViewport>
   );
 }

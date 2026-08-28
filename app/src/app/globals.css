@@ -125,5 +125,10 @@ body {
 /* 하단 고정 바: 홈 인디케이터 여백 */
 .bottom-bar { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
 
+/* 채팅방 안에서는 하단 탭바·푸터를 숨기고 문서 스크롤을 잠근다 (화면 자체가 앱처럼 고정) */
+body:has([data-chat-room]) { overflow: hidden; }
+body:has([data-chat-room]) footer,
+body:has([data-chat-room]) nav[aria-label="주요 메뉴"] { display: none; }
+
 /* Iconify(lucide) 아이콘 공통: 인라인 정렬, 현재 글자색 */
 [class*="icon-["] { display: inline-block; vertical-align: -0.15em; flex-shrink: 0; }

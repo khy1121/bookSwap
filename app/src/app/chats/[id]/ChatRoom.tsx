@@ -23,8 +23,11 @@ export function ChatRoom({
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [live, setLive] = useState<"connecting" | "on" | "off">("connecting");
-  const bottom = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const [unseen, setUnseen] = useState(0); // 아래로 스크롤 안 한 상태에서 도착한 상대 메시지 수
+  const atBottomRef = useRef(true);
   const fileInput = useRef<HTMLInputElement>(null);
+  const textarea = useRef<HTMLTextAreaElement>(null);
 
   // Realtime: 이 방의 새 메시지를 받는다 (RLS로 참여자만). 내가 보낸 건 응답으로 이미 넣었으니 중복 제거.
   useEffect(() => {
@@ -61,7 +64,36 @@ export function ChatRoom({
     return () => clearInterval(t);
   }, [live, roomId, messages]);
 
-  useEffect(() => { bottom.current?.scrollIntoView({ block: "end" }); }, [messages.length]);
+  // 스크롤: 처음엔 맨 아래로(즉시). 이후엔 내가 보냈거나 이미 바닥 근처일 때만 따라 내려가고,
+  // 위쪽을 읽는 중이면 자리를 지키고 "새 메시지" 표시만 띄운다.
+  const scrollToBottom = (smooth = false) => {
+    const el = listRef.current; if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" });
+    setUnseen(0);
+  };
+  const lastCount = useRef(0);
+  useEffect(() => {
+    const el = listRef.current; if (!el) return;
+    const last = messages[messages.length - 1];
+    if (lastCount.current === 0 || !last) { scrollToBottom(false); lastCount.current = messages.length; return; }
+    if (messages.length === lastCount.current) return;
+    lastCount.current = messages.length;
+    if (last.sender_id === me || atBottomRef.current) scrollToBottom(true);
+    else setUnseen((n) => n + 1);
+  }, [messages, me]);
+  // 이미지가 늦게 로드돼 높이가 늘어도 바닥에 붙어 있게
+  useEffect(() => {
+    const el = listRef.current; if (!el) return;
+    const ro = new ResizeObserver(() => { if (atBottomRef.current) el.scrollTop = el.scrollHeight; });
+    ro.observe(el.firstElementChild ?? el);
+    return () => ro.disconnect();
+  }, []);
+  const onScroll = () => {
+    const el = listRef.current; if (!el) return;
+    const near = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    atBottomRef.current = near;
+    if (near) setUnseen(0);
+  };
 
   async function pick(list: FileList | null) {
     const f = list?.[0];
@@ -84,6 +116,7 @@ export function ChatRoom({
     if (body) fd.set("body", body);
     if (photo) fd.set("photo", photo.file, photo.file.name);
     setText("");
+    textarea.current?.focus();
     const sent = photo;
     setPhoto(null);
     // 낙관적 표시: 서버 응답을 기다리지 않고 바로 말풍선을 그린다 (카톡처럼)
@@ -106,7 +139,8 @@ export function ChatRoom({
 
   return (
     <>
-      <div className="flex-1 space-y-2 overflow-y-auto bg-surface px-4 py-4">
+      <div ref={listRef} onScroll={onScroll} className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain bg-surface px-4 py-3 [-webkit-overflow-scrolling:touch]">
+       <div className="space-y-2">
         {messages.length === 0 && (
           <p className="py-10 text-center text-[13px] text-gray-3">{counterpartRole}에게 첫 메시지를 보내보세요.<br />거래 장소·시간, 책 상태를 물어보면 좋습니다.</p>
         )}
@@ -133,10 +167,17 @@ export function ChatRoom({
             </div>
           );
         })}
-        <div ref={bottom} />
+       </div>
       </div>
 
-      <div className="bottom-bar sticky bottom-0 border-t border-line bg-white px-3 pt-2">
+      {unseen > 0 && (
+        <button type="button" onClick={() => scrollToBottom(true)}
+          className="press anim-fade-up absolute bottom-24 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-navy px-3 py-1.5 text-[12px] font-semibold text-white shadow-lg">
+          <span aria-hidden className="icon-[lucide--arrow-down] size-3.5" />새 메시지 {unseen}
+        </button>
+      )}
+
+      <div className="bottom-bar shrink-0 border-t border-line bg-white px-3 pt-2">
         {photo && (
           <div className="mb-2 flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -154,7 +195,7 @@ export function ChatRoom({
               <span aria-hidden className="icon-[lucide--image-plus] size-5" />
             </button>
             <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={(e) => pick(e.target.files)} />
-            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={1} maxLength={500}
+            <textarea ref={textarea} value={text} onChange={(e) => setText(e.target.value)} rows={1} maxLength={500} enterKeyHint="send"
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); submit(); } }}
               placeholder="메시지 입력"
               className="max-h-32 min-h-11 flex-1 resize-none rounded-2xl border border-line bg-surface px-4 py-2.5 text-[14px] outline-none transition-[border-color,box-shadow] focus:border-action focus:shadow-[0_0_0_3px_rgba(0,100,239,0.12)]" />
@@ -165,7 +206,7 @@ export function ChatRoom({
           </form>
         )}
         <p className="mt-1 text-center text-[10px] text-gray-3">
-          {live === "on" ? "실시간 연결됨" : live === "connecting" ? "연결 중…" : "실시간 연결이 끊겨 15초마다 새로고침합니다"}
+          {live === "on" ? "실시간 연결됨" : live === "connecting" ? "연결 중…" : "실시간 연결이 끊겨 3초마다 새로고침합니다"}
         </p>
       </div>
     </>
