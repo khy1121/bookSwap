@@ -47,7 +47,7 @@ export default async function MyPage() {
                 </span>
                 <span className="shrink-0 text-[14px] font-semibold tabular-nums">{won(l.price)}</span>
               </Link>
-              <div className="mt-2 pl-[52px]">
+              <div className="mt-2">
                 <OwnerActions listingId={l.id} status={l.status} title={l.book_title} />
               </div>
             </li>
