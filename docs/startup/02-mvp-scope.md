@@ -119,3 +119,5 @@ build 통: **3개** ✓
 - 공지: `npm run notify -- "제목" "본문" [/url]` 전체 구독자
 - 환경변수: NEXT_PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT, PUSH_WEBHOOK_SECRET (로컬 생성 완료, Vercel 등록 필요)
 - 한계: iOS는 설치한 PWA에서만(16.4+), 인앱 브라우저 불가, OS 배터리 정책으로 지연 가능. 알림음은 OS 기본음(커스텀 불가)
+
+- 2026-08-28: 웹 푸시 전체 경로 검증 완료 — chat_messages INSERT → pg_net 트리거 → /api/push/chat → web-push (e2e PASS, 3대 기기 수신). 트리거 SQL은 비밀값을 포함하므로 `app/supabase/_webhook_local_only.sql`로 gitignore.

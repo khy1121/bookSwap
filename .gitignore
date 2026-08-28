@@ -6,3 +6,4 @@ __pycache__/
 .DS_Store
 Thumbs.db
 Pretendard-1.3.9/
+app/supabase/_webhook_local_only.sql
