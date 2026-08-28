@@ -25,7 +25,14 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       unread = typeof data === "number" ? data : 0;
     } catch { unread = 0; }
   }
-  const nav = "press inline-flex items-center rounded-full px-2.5 py-1.5 hover:bg-surface hover:text-ink";
+  const nav = "press inline-flex items-center rounded-full px-2 py-1.5 text-[12px] sm:text-[13px] hover:bg-surface hover:text-ink";
+  // 아이콘만 있는 항목: 호버·포커스 시 라벨이 옆으로 펼쳐진다 (reduced-motion이면 전환 없이 표시)
+  const reveal =
+    // 기본(터치 기기): 라벨 항상 표시. 호버 가능한 기기(마우스): 접혀 있다가 호버·포커스 시 펼침
+    "ml-1 max-w-16 whitespace-nowrap opacity-100 transition-[max-width,opacity,margin] duration-200 " +
+    "[@media(hover:hover)]:ml-0 [@media(hover:hover)]:max-w-0 [@media(hover:hover)]:overflow-hidden [@media(hover:hover)]:opacity-0 " +
+    "[@media(hover:hover)]:group-hover:ml-1 [@media(hover:hover)]:group-hover:max-w-16 [@media(hover:hover)]:group-hover:opacity-100 " +
+    "[@media(hover:hover)]:group-focus-visible:ml-1 [@media(hover:hover)]:group-focus-visible:max-w-16 [@media(hover:hover)]:group-focus-visible:opacity-100";
   return (
     <html lang="ko" className="h-full">
       <body className="min-h-full flex flex-col bg-surface">
@@ -38,20 +45,24 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               <span className="text-[11px] font-semibold tracking-wider text-sky">HANSUNG</span>
             </Link>
             <div className="flex items-center gap-0.5 text-[13px] font-medium text-gray-2">
-              <Link href="/browse" className={nav}><span aria-hidden className="icon-[lucide--list] mr-1 size-4" />학과</Link>
+              <Link href="/browse" className={`${nav} group`} aria-label="학과"><span aria-hidden className="icon-[lucide--list] size-4" /><span aria-hidden className={reveal}>학과</span></Link>
               {user ? (
                 <>
-                  <Link href="/chats" className={`${nav} relative`} aria-label={unread ? `채팅, 안 읽음 ${unread}` : "채팅"}>
+                  <Link href="/chats" className={`${nav} group relative`} aria-label={unread ? `채팅, 안 읽음 ${unread}` : "채팅"}>
                     <span aria-hidden className="icon-[lucide--message-circle] size-4" />
+                    <span aria-hidden className={reveal}>채팅</span>
                     {unread > 0 && <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-blue px-1 text-center text-[10px] font-bold leading-4 text-white">{unread > 99 ? "99+" : unread}</span>}
                   </Link>
-                  <Link href="/my" className={nav}><span aria-hidden className="icon-[lucide--user] mr-1 size-4" />내 거래</Link>
+                  <Link href="/my" className={`${nav} group`} aria-label="내 거래"><span aria-hidden className="icon-[lucide--user] size-4" /><span aria-hidden className={reveal}>내 거래</span></Link>
                   <form action={signOut}>
-                    <button className={nav} aria-label="로그아웃"><span aria-hidden className="icon-[lucide--log-out] size-4" /></button>
+                    <button className={`${nav} group`} aria-label="로그아웃">
+                      <span aria-hidden className="icon-[lucide--log-out] size-4" />
+                      <span aria-hidden className={reveal}>로그아웃</span>
+                    </button>
                   </form>
                 </>
               ) : (
-                <Link href="/login" className={nav}><span aria-hidden className="icon-[lucide--mail] mr-1 size-4" />로그인</Link>
+                <Link href="/login" className={`${nav} group`} aria-label="로그인"><span aria-hidden className="icon-[lucide--log-in] size-4" /><span aria-hidden className={reveal}>로그인</span></Link>
               )}
             </div>
           </nav>
