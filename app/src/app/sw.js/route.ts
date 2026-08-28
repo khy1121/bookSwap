@@ -32,8 +32,23 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const url = (event.notification.data && event.notification.data.url) || "/";
+  const target = new URL(url, self.location.origin).href;
   event.waitUntil((async () => {
     const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    // 1) 같은 주소가 이미 열려 있으면 포커스
+    for (const c of all) {
+      if (c.url === target && "focus" in c) { try { return await c.focus(); } catch (e) {} }
+    }
+    // 2) 열린 창(앱)이 있으면 그 창을 채팅방으로 이동 (실패하면 새 창으로 폴백)
+    for (const c of all) {
+      if ("navigate" in c) {
+        try { const w = await c.navigate(target); if (w && "focus" in w) await w.focus(); return; } catch (e) {}
+      }
+    }
+    // 3) 없으면 새 창(설치된 PWA면 앱으로 열림)
+    try { await self.clients.openWindow(target); } catch (e) {}
+  })());
+});
     const target = new URL(url, self.location.origin).href;
     for (const c of all) {
       if (c.url === target && "focus" in c) return c.focus();
