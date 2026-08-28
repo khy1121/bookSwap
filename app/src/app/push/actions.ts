@@ -2,6 +2,7 @@
 
 import { createClient, getUser } from "@/lib/supabase/server";
 import { track } from "@/lib/events";
+import { reportError } from "@/lib/report";
 
 type SubJSON = { endpoint: string; keys: { p256dh: string; auth: string } };
 
@@ -15,7 +16,7 @@ export async function savePushSubscription(sub: SubJSON, userAgent: string): Pro
     { user_id: user.id, endpoint: sub.endpoint, p256dh: sub.keys.p256dh, auth: sub.keys.auth, user_agent: userAgent.slice(0, 200), last_seen_at: new Date().toISOString() },
     { onConflict: "endpoint" },
   );
-  if (error) { console.error("[push] save", error.message); return { ok: false, error: "알림 설정을 저장하지 못했습니다." }; }
+  if (error) { await reportError("push.save", error, {}, user.id); return { ok: false, error: "알림 설정을 저장하지 못했습니다." }; }
   await track("push_enabled", {});
   return { ok: true };
 }

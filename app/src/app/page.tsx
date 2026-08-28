@@ -18,7 +18,8 @@ export default async function Home(props: PageProps<"/">) {
 
   // 검색·최근 거래·학과 트리를 한꺼번에 조회 (순차 왕복 3번 → 1번)
   const safe = query.replace(/[%,()]/g, " ");
-  const [courseRes, recentRes, tree] = await Promise.all([
+  const [courseRes, recentRes, tree, wantedRes] = await Promise.all([
+
     query
       ? supabase
           .from("courses")
@@ -29,12 +30,16 @@ export default async function Home(props: PageProps<"/">) {
       : Promise.resolve(null),
     supabase.from("listings_public").select("*").eq("status", "open").order("created_at", { ascending: false }).limit(12),
     query ? loadMajorTree(supabase) : Promise.resolve(null),
+    supabase.rpc("top_wanted_courses", { p_limit: 6 }),
   ]);
 
   const courses = (courseRes ? (must(courseRes, "수업 검색 결과") ?? []) : []) as Course[];
   if (query) after(() => track("search", { q: query, results: courses.length }));
 
   const listings = (must(recentRes, "최근 거래") ?? []) as ListingPublic[];
+  // 초기엔 매물보다 "기다리는 사람"이 먼저 쌓인다 → 수요가 모인 수업을 보여줘 판매를 유도
+  type Wanted = { course_id: string; course: string; prof: string; cover_url: string | null; buyers: number; watchers: number };
+  const wanted = ((wantedRes.data ?? []) as Wanted[]).filter((w) => w.buyers + w.watchers > 0);
 
   const grouped = new Map<string, Course[]>();
   for (const c of courses) grouped.set(c.course, [...(grouped.get(c.course) ?? []), c]);
@@ -133,13 +138,40 @@ export default async function Home(props: PageProps<"/">) {
         </section>
       )}
 
+      {!query && wanted.length > 0 && (
+        <section className="border-t-8 border-surface">
+          <h2 className="px-4 pt-5 pb-0.5 text-[15px] font-bold">지금 찾는 교재</h2>
+          <p className="px-4 pb-2 text-[12px] text-gray-2">이 수업 책을 갖고 있다면 올려보세요 — 기다리는 사람에게 바로 알림이 갑니다</p>
+          <ul className="stagger">
+            {wanted.map((w) => (
+              <li key={w.course_id} className="border-b border-line">
+                <Link href={`/courses/${w.course_id}`} className="row flex items-center gap-3 px-4 py-3">
+                  <Cover src={w.cover_url} alt="" size="sm" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[14px] font-medium">{w.course}</span>
+                    <span className="block truncate text-[12px] text-gray-2">{w.prof}</span>
+                  </span>
+                  <span className="shrink-0 rounded-full bg-surface-soft px-2.5 py-1 text-[12px] font-semibold text-blue">
+                    {w.buyers > 0 ? `구매 희망 ${w.buyers}` : ""}{w.buyers > 0 && w.watchers > 0 ? " · " : ""}{w.watchers > 0 ? `대기 ${w.watchers}` : ""}
+                  </span>
+                  <span aria-hidden className="icon-[lucide--chevron-right] size-4 text-gray-3" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section className="border-t-8 border-surface">
         <h2 className="px-4 pt-5 pb-2 text-[15px] font-bold">최근 올라온 거래</h2>
         {listings.length === 0 && (
           <div className="mx-4 mb-6 rounded-xl border border-dashed border-line p-5 text-center">
             <p className="text-[14px] font-medium">아직 올라온 거래가 없습니다</p>
-            <p className="mt-1 text-[12px] text-gray-2">수업을 검색해서 첫 판매·구매를 올려보세요.</p>
-            <Link href="/browse" className="press mt-3 inline-flex h-9 items-center rounded-full bg-navy px-4 text-[13px] font-semibold text-white">학과에서 수업 찾기</Link>
+            <p className="mt-1 text-[12px] text-gray-2">필요한 교재를 먼저 등록해 두세요. 판매자가 나타나면 알려드립니다.</p>
+            <div className="mt-3 flex justify-center gap-2">
+              <Link href="/browse" className="press inline-flex h-9 items-center gap-1 rounded-full bg-blue px-4 text-[13px] font-semibold text-white"><span aria-hidden className="icon-[lucide--hand] size-4" />구매 희망 등록</Link>
+              <Link href="/browse" className="press inline-flex h-9 items-center rounded-full border border-line bg-white px-4 text-[13px] font-semibold text-gray-1">학과에서 수업 찾기</Link>
+            </div>
           </div>
         )}
         <ul className="stagger">

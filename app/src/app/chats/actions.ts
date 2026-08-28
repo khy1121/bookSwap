@@ -6,6 +6,7 @@ import { after } from "next/server";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { track } from "@/lib/events";
 import { LIMITS, toMessage } from "@/lib/errors";
+import { reportError } from "@/lib/report";
 
 export type ChatMessage = {
   id: number;
@@ -36,7 +37,7 @@ export async function openChat(listingId: string) {
     .insert({ listing_id: listingId, buyer_id: user.id, seller_id: l.user_id })
     .select("id")
     .single();
-  if (error) { console.error("[openChat]", error.code, error.message); redirect(`/listings/${listingId}?toast=error`); }
+  if (error) { await reportError("openChat", error, { listingId }, user.id); redirect(`/listings/${listingId}?toast=error`); }
 
   await track("chat_started", { listing_id: listingId, room_id: room.id });
   redirect(`/chats/${room.id}`);
@@ -72,7 +73,7 @@ export async function sendMessage(roomId: string, form: FormData): Promise<{ err
     const ext = photo.type === "image/png" ? "png" : photo.type === "image/webp" ? "webp" : "jpg";
     const path = `${roomId}/${Date.now()}-${user.id.slice(0, 8)}.${ext}`;
     const { error: upErr } = await supabase.storage.from("chat-photos").upload(path, photo, { contentType: photo.type });
-    if (upErr) { console.error("[chat upload]", upErr.message); return { error: `사진 전송 실패: ${toMessage(upErr)}` }; }
+    if (upErr) { await reportError("chat.upload", upErr, { roomId }, user.id); return { error: `사진 전송 실패: ${toMessage(upErr)}` }; }
     image_url = supabase.storage.from("chat-photos").getPublicUrl(path).data.publicUrl;
   }
 
@@ -81,7 +82,7 @@ export async function sendMessage(roomId: string, form: FormData): Promise<{ err
     .insert({ room_id: roomId, sender_id: user.id, body, image_url })
     .select("*")
     .single();
-  if (error) { console.error("[sendMessage]", error.code, error.message); return { error: toMessage(error) }; }
+  if (error) { await reportError("sendMessage", error, { roomId }, user.id); return { error: toMessage(error) }; }
 
   after(() => track("chat_message", { room_id: roomId, has_image: !!image_url }));
   revalidatePath("/chats");
