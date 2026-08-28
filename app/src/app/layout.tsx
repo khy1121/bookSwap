@@ -5,15 +5,25 @@ import "./globals.css";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { signOut } from "./actions";
 import { Toast } from "@/components/Toast";
+import { TabBar } from "@/components/TabBar";
 
 export const metadata: Metadata = {
   title: "BookSwap — 한성대 과목별 중고 교재",
   description: "한성대 과목·교수 기준으로 중고 교재를 사고팝니다. 교수님이 지정한 주교재를 같이 확인하세요.",
+  applicationName: "BookSwap",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [{ url: "/icons/favicon-32.png", sizes: "32x32" }, { url: "/icons/icon-192.png", sizes: "192x192" }],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+  },
+  appleWebApp: { capable: true, title: "BookSwap", statusBarStyle: "default" },
+  formatDetection: { telephone: false },
 };
 /** 피드백 채널(공개 오픈채팅). 환경변수가 있으면 그걸 우선한다. */
 const FEEDBACK_URL = "https://open.kakao.com/o/sfnqXPKi";
 
-export const viewport: Viewport = { themeColor: "#0a4da1", width: "device-width", initialScale: 1 };
+// viewportFit cover: PWA standalone에서 노치·홈 인디케이터 영역까지 그리고, safe-area는 .bottom-bar가 처리
+export const viewport: Viewport = { themeColor: "#0a4da1", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const user = await getUser();
@@ -44,7 +54,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               </span>
               <span className="text-[11px] font-semibold tracking-wider text-sky">HANSUNG</span>
             </Link>
-            <div className="flex items-center gap-0.5 text-[13px] font-medium text-gray-2">
+            <div className="hidden items-center gap-0.5 text-[13px] font-medium text-gray-2 sm:flex">
               <Link href="/browse" className={`${nav} group`} aria-label="학과"><span aria-hidden className="icon-[lucide--list] size-4" /><span aria-hidden className={reveal}>학과</span></Link>
               {user ? (
                 <>
@@ -65,9 +75,14 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
                 <Link href="/login" className={`${nav} group`} aria-label="로그인"><span aria-hidden className="icon-[lucide--log-in] size-4" /><span aria-hidden className={reveal}>로그인</span></Link>
               )}
             </div>
+            {user && (
+              <form action={signOut} className="sm:hidden">
+                <button className={nav} aria-label="로그아웃"><span aria-hidden className="icon-[lucide--log-out] size-4" /></button>
+              </form>
+            )}
           </nav>
         </header>
-        <main className="mx-auto w-full max-w-md flex-1 bg-white">{children}</main>
+        <main className="mx-auto w-full max-w-md flex-1 bg-white pb-16 sm:pb-0">{children}</main>
         <footer className="mx-auto w-full max-w-md bg-white px-4 py-8 text-[11px] leading-relaxed text-gray-3">
           <p><b className="text-gray-2">BookSwap</b> · 한성대 학생이 만든 비공식 서비스입니다. 거래는 당사자 간 직거래로 진행됩니다.</p>
           <p className="mt-1">
@@ -84,6 +99,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <Suspense fallback={null}>
           <Toast />
         </Suspense>
+        {user && <TabBar unread={unread} />}
       </body>
     </html>
   );

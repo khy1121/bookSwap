@@ -101,3 +101,8 @@ build 통: **3개** ✓
 - 매물 상세: "○○와 채팅하기"가 주 버튼, 오픈채팅·에타 연락처는 보조
 - 이벤트: chat_started, chat_message(has_image). 활성화 지표를 contact_clicked → chat_started로 바꿀지는 9/10 판정 때 결정
 - e2e (2026-08-27, PR #14): 테스트 계정으로 방 생성 → 텍스트·사진 전송 → 판매자 브라우저에서 수신·배지·답장 → 구매자 실시간 수신 PASS, 읽음 처리 PASS. 발견·수정: Realtime 구독 전 세션 토큰 필요, 렌더 중 revalidatePath 금지
+
+## PWA · 모바일 앱 규격 (PR #22)
+- `app/manifest.ts`(standalone, 아이콘 192/512/maskable, start_url `/?ref=pwa`로 설치 유입 계측), iOS 메타(apple-touch-icon, web-app-capable), viewport-fit=cover
+- 모바일(<640px): 헤더는 로고+로그아웃만, **하단 탭바**(홈·학과·채팅·내 거래, 채팅 배지). 자체 하단 바가 있는 화면(과목·매물 상세, 등록/수정, 채팅방)에선 탭바 숨김
+- PWA는 레이아웃을 보정하지 않음 — safe-area는 `.bottom-bar`(env(safe-area-inset-bottom))가 처리. 서비스워커는 넣지 않음(오프라인 불필요, Chrome 설치엔 매니페스트만으로 충분)
