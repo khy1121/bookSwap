@@ -106,3 +106,4 @@ build 통: **3개** ✓
 - `app/manifest.ts`(standalone, 아이콘 192/512/maskable, start_url `/?ref=pwa`로 설치 유입 계측), iOS 메타(apple-touch-icon, web-app-capable), viewport-fit=cover
 - 모바일(<640px): 헤더는 로고+로그아웃만, **하단 탭바**(홈·학과·채팅·내 거래, 채팅 배지). 자체 하단 바가 있는 화면(과목·매물 상세, 등록/수정, 채팅방)에선 탭바 숨김
 - PWA는 레이아웃을 보정하지 않음 — safe-area는 `.bottom-bar`(env(safe-area-inset-bottom))가 처리. 서비스워커는 넣지 않음(오프라인 불필요, Chrome 설치엔 매니페스트만으로 충분)
+- 설치 안내(PR #23): `InstallPrompt` — Android는 beforeinstallprompt로 즉시 설치, iOS는 '공유→홈 화면에 추가' 3단계 시트, 인앱 브라우저(카톡·인스타·에타 앱)는 외부 브라우저로 열기 안내. standalone이면 미표시, 닫으면 7일 숨김. 이벤트: pwa_prompt_shown/dismissed, pwa_install_choice(outcome), pwa_installed, pwa_guide_shown. 미리보기 `?pwa=android|ios|inapp`
