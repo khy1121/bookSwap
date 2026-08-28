@@ -13,6 +13,37 @@ self.addEventListener("install", () => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
+// 푸시 수신 → 알림 표시 (OS 기본 알림음·진동). data.url로 이동
+self.addEventListener("push", (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (e) { data = { title: "BookSwap", body: event.data ? event.data.text() : "" }; }
+  const title = data.title || "BookSwap";
+  const options = {
+    body: data.body || "",
+    icon: data.icon || "/icons/icon-192.png",
+    badge: data.badge || "/icons/icon-192.png",
+    tag: data.tag || undefined,
+    renotify: !!data.tag,
+    vibrate: [100, 50, 100],
+    data: { url: data.url || "/" },
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || "/";
+  event.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    const target = new URL(url, self.location.origin).href;
+    for (const c of all) {
+      if (c.url === target && "focus" in c) return c.focus();
+    }
+    for (const c of all) {
+      if ("navigate" in c && "focus" in c) { await c.navigate(target); return c.focus(); }
+    }
+    return self.clients.openWindow(target);
+  })());
+});
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
   if (event.data && event.data.type === "GET_BUILD" && event.source) event.source.postMessage({ type: "BUILD", build: BUILD });

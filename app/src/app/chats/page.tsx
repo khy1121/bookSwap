@@ -4,6 +4,7 @@ import { createClient, getUser } from "@/lib/supabase/server";
 import { must } from "@/lib/errors";
 import { Cover } from "@/components/Cover";
 import { KIND_LABEL } from "@/lib/types";
+import { PushToggle } from "@/components/PushToggle";
 
 type Row = {
   room_id: string; listing_id: string; book_title: string; course: string | null; cover_url: string | null; photo: string | null;
@@ -30,6 +31,7 @@ export default async function ChatsPage() {
       <section className="px-4 pt-5 pb-3">
         <h1 className="text-[20px] font-bold tracking-tight">채팅</h1>
         <p className="mt-1 text-[13px] text-gray-2">거래 상대와 나눈 대화. 사진도 보낼 수 있습니다.</p>
+        <div className="mt-3"><PushToggle /></div>
       </section>
       {rows.length === 0 && (
         <div className="mx-4 my-6 rounded-xl border border-dashed border-line p-5 text-center">
