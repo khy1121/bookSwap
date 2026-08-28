@@ -76,10 +76,12 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
                 <Link href="/login" className={`${nav} group`} aria-label="로그인"><span aria-hidden className="icon-[lucide--log-in] size-4" /><span aria-hidden className={reveal}>로그인</span></Link>
               )}
             </div>
-            {user && (
+            {user ? (
               <form action={signOut} className="sm:hidden">
                 <button className={nav} aria-label="로그아웃"><span aria-hidden className="icon-[lucide--log-out] size-4" /></button>
               </form>
+            ) : (
+              <Link href="/login" className={`${nav} sm:hidden`}><span aria-hidden className="icon-[lucide--log-in] mr-1 size-4" />로그인</Link>
             )}
           </nav>
         </header>
@@ -101,7 +103,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <Toast />
           <InstallPrompt />
         </Suspense>
-        {user && <TabBar unread={unread} />}
+        <TabBar unread={unread} loggedIn={!!user} />
       </body>
     </html>
   );
