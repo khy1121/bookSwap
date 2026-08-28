@@ -109,3 +109,4 @@ build 통: **3개** ✓
 - 설치 안내(PR #23): `InstallPrompt` — Android는 beforeinstallprompt로 즉시 설치, iOS는 '공유→홈 화면에 추가' 3단계 시트, 인앱 브라우저(카톡·인스타·에타 앱)는 외부 브라우저로 열기 안내. standalone이면 미표시, 닫으면 7일 숨김. 이벤트: pwa_prompt_shown/dismissed, pwa_install_choice(outcome), pwa_installed, pwa_guide_shown. 미리보기 `?pwa=android|ios|inapp`
 - iOS PWA는 Safari와 쿠키를 공유하지 않아 로그아웃 상태로 열림(PR #24로 대응): 탭바를 항상 표시하고 로그아웃 시 '내 거래'→'로그인', 채팅 탭은 로그인으로 유도, 모바일 헤더에 로그인 링크. 설치 후 앱 안에서 Google 로그인 1회 필요
 - 업데이트 토스트(PR #25): `/sw.js` 라우트가 배포 SHA(VERCEL_GIT_COMMIT_SHA, 로컬은 빌드 시각)를 박은 서비스워커를 no-cache로 서빙 → 브라우저가 새 워커를 대기 상태로 받으면 `UpdateToast`가 바닥에서 올라옴 → [업데이트하기] → SKIP_WAITING → controllerchange → 자동 새로고침. 감지 주기: 로드·탭 복귀·15분. 캐싱은 하지 않음(역할은 버전 감지·적용). 로컬 e2e: 워커 내용 변경 → update() → 토스트 → 적용·새로고침 확인
+- PWA 마감(PR #26): 헤더 뒤로가기(홈 제외, 히스토리 없으면 상위 화면으로: 과목→학과, 채팅방→목록, 매물→홈), 푸터가 탭바에 가려지던 문제(푸터 하단 여백), 홈 인라인 설치 배너(`InstallBanner`, 설치 로직은 `lib/useInstall.ts`로 공유, 홈에선 떠다니는 프롬프트 숨김)

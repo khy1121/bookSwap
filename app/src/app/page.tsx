@@ -7,6 +7,8 @@ import { KIND_COLOR, KIND_LABEL, firstLine, won } from "@/lib/types";
 import { Cover } from "@/components/Cover";
 import { flattenMajors, loadMajorTree } from "@/lib/majors";
 import { SearchBox } from "@/components/SearchBox";
+import { Suspense } from "react";
+import { InstallBanner } from "@/components/InstallBanner";
 
 export default async function Home(props: PageProps<"/">) {
   const { q = "" } = await props.searchParams;
@@ -63,6 +65,11 @@ export default async function Home(props: PageProps<"/">) {
           <span aria-hidden className="icon-[lucide--list] size-4" />학과·트랙으로 찾기<span aria-hidden className="icon-[lucide--chevron-right] size-4" />
         </Link>
       </section>
+
+      {/* 모바일 브라우저에서만 보이는 설치 배너 (앱으로 열었으면 숨김) */}
+      <Suspense fallback={null}>
+        <InstallBanner />
+      </Suspense>
 
       {majorHits.length > 0 && (
         <section className="border-t-8 border-surface">

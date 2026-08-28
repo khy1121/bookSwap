@@ -8,6 +8,7 @@ import { Toast } from "@/components/Toast";
 import { TabBar } from "@/components/TabBar";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { UpdateToast } from "@/components/UpdateToast";
+import { BackButton } from "@/components/BackButton";
 
 export const metadata: Metadata = {
   title: "BookSwap — 한성대 과목별 중고 교재",
@@ -50,12 +51,15 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-surface">
         <header className="sticky top-0 z-20 border-b border-line bg-white/95 backdrop-blur">
           <nav className="mx-auto flex h-14 max-w-md items-center justify-between px-3">
+            <div className="flex items-center">
+            <BackButton />
             <Link href="/" className="press flex items-baseline gap-1.5 rounded-full px-1.5 py-1">
               <span className="flex items-center gap-1 text-lg font-extrabold tracking-tight text-navy">
                 <span aria-hidden className="icon-[lucide--book-open] size-5 text-blue" />BookSwap
               </span>
               <span className="text-[11px] font-semibold tracking-wider text-sky">HANSUNG</span>
             </Link>
+            </div>
             <div className="hidden items-center gap-0.5 text-[13px] font-medium text-gray-2 sm:flex">
               <Link href="/browse" className={`${nav} group`} aria-label="학과"><span aria-hidden className="icon-[lucide--list] size-4" /><span aria-hidden className={reveal}>학과</span></Link>
               {user ? (
@@ -86,8 +90,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             )}
           </nav>
         </header>
-        <main className="mx-auto w-full max-w-md flex-1 bg-white pb-16 sm:pb-0">{children}</main>
-        <footer className="mx-auto w-full max-w-md bg-white px-4 py-8 text-[11px] leading-relaxed text-gray-3">
+        <main className="mx-auto w-full max-w-md flex-1 bg-white">{children}</main>
+        <footer className="mx-auto w-full max-w-md bg-white px-4 pt-8 pb-[calc(5rem+env(safe-area-inset-bottom))] text-[11px] leading-relaxed text-gray-3 sm:pb-8">
           <p><b className="text-gray-2">BookSwap</b> · 한성대 학생이 만든 비공식 서비스입니다. 거래는 당사자 간 직거래로 진행됩니다.</p>
           <p className="mt-1">
             불편한 점이 있으면{" "}
