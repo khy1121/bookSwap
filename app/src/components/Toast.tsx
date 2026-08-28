@@ -46,7 +46,7 @@ export function Toast() {
   if (!msg) return null;
   return (
     <button type="button" onClick={() => setMsg(null)} role="status" aria-live="polite"
-      className="anim-toast fixed bottom-24 left-1/2 z-[60] -translate-x-1/2 rounded-full bg-ink px-4 py-2.5 text-[13px] font-medium text-white shadow-lg">
+      className="anim-toast fixed bottom-24 left-1/2 z-[60] rounded-full bg-ink px-4 py-2.5 text-[13px] font-medium text-white shadow-lg">
       {msg}
     </button>
   );
