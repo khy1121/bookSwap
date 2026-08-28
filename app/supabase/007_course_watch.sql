@@ -33,14 +33,17 @@ language sql stable security definer set search_path = public as $$
     select c.course, c.prof, min(c.id::text)::uuid as course_id, max(c.cover_url) as cover_url,
            array_agg(c.id) as ids
     from public.courses c group by c.course, c.prof
+  ),
+  counted as (
+    select g.course_id, g.course, g.prof, g.cover_url,
+           (select count(*)::int from public.listings l where l.course_id = any(g.ids) and l.kind = 'buy' and l.status = 'open') as buyers,
+           (select count(distinct w.user_id)::int from public.course_watches w where w.course_id = any(g.ids)) as watchers
+    from grp g
   )
-  select g.course_id, g.course, g.prof, g.cover_url,
-         (select count(*)::int from public.listings l where l.course_id = any(g.ids) and l.kind = 'buy' and l.status = 'open') as buyers,
-         (select count(distinct w.user_id)::int from public.course_watches w where w.course_id = any(g.ids)) as watchers
-  from grp g
-  where exists (select 1 from public.listings l where l.course_id = any(g.ids) and l.kind = 'buy' and l.status = 'open')
-     or exists (select 1 from public.course_watches w where w.course_id = any(g.ids))
-  order by buyers + watchers desc, g.course
+  select x.course_id, x.course, x.prof, x.cover_url, x.buyers, x.watchers
+  from counted x
+  where x.buyers + x.watchers > 0
+  order by x.buyers + x.watchers desc, x.course
   limit p_limit;
 $$;
 grant execute on function public.top_wanted_courses(int) to anon, authenticated;
