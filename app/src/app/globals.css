@@ -58,6 +58,16 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* iOS Safari는 입력창 글자가 16px 미만이면 포커스 시 화면을 확대하고 잘 되돌리지 않는다.
+   모바일에서는 모든 입력 요소를 16px로 고정해 확대 자체를 막는다 (utilities 레이어보다 우선). */
+@media (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
 /* 시그니처: 수강편람 시간표 셀을 닮은 과목 코드 라벨 */
 .course-code {
   font-family: var(--font-sans);
