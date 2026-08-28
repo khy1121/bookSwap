@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { track } from "@/lib/events";
 import { LIMITS, toMessage } from "@/lib/errors";
@@ -55,11 +56,13 @@ export async function sendMessage(roomId: string, form: FormData): Promise<{ err
   if (!body && !photo) return { error: "내용을 입력하세요." };
 
   // 참여자 확인 (RLS도 막지만 메시지를 명확히 주기 위해)
-  const { data: room } = await supabase.from("chat_rooms").select("id, buyer_id, seller_id").eq("id", roomId).single();
+  const since = new Date(Date.now() - 60_000).toISOString();
+  const [{ data: room }, { count }] = await Promise.all([
+    supabase.from("chat_rooms").select("id, buyer_id, seller_id").eq("id", roomId).single(),
+    supabase.from("chat_messages").select("id", { count: "exact", head: true }).eq("room_id", roomId).eq("sender_id", user.id).gte("created_at", since),
+  ]);
   if (!room || ![room.buyer_id, room.seller_id].includes(user.id)) return { error: "이 채팅방에 참여하고 있지 않습니다." };
 
-  const since = new Date(Date.now() - 60_000).toISOString();
-  const { count } = await supabase.from("chat_messages").select("id", { count: "exact", head: true }).eq("room_id", roomId).eq("sender_id", user.id).gte("created_at", since);
   if ((count ?? 0) >= PER_MINUTE) return { error: "메시지를 너무 빠르게 보내고 있습니다. 잠시 후 다시 보내주세요." };
 
   let image_url: string | null = null;
@@ -80,7 +83,7 @@ export async function sendMessage(roomId: string, form: FormData): Promise<{ err
     .single();
   if (error) { console.error("[sendMessage]", error.code, error.message); return { error: toMessage(error) }; }
 
-  await track("chat_message", { room_id: roomId, has_image: !!image_url });
+  after(() => track("chat_message", { room_id: roomId, has_image: !!image_url }));
   revalidatePath("/chats");
   return { message: data as ChatMessage };
 }

@@ -8,6 +8,7 @@ import { Cover } from "@/components/Cover";
 import { flattenMajors, loadMajorTree } from "@/lib/majors";
 import { SearchBox } from "@/components/SearchBox";
 import { Suspense } from "react";
+import { after } from "next/server";
 import { InstallBanner } from "@/components/InstallBanner";
 
 export default async function Home(props: PageProps<"/">) {
@@ -15,35 +16,34 @@ export default async function Home(props: PageProps<"/">) {
   const query = String(q).trim().slice(0, 50);
   const supabase = await createClient();
 
-  let courses: Course[] = [];
-  if (query) {
-    const safe = query.replace(/[%,()]/g, " ");
-    const data = must(await supabase
-      .from("courses")
-      .select("id, term, major, course_code, course, prof, bunban, book, subbook, cover_url")
-      .or(`course.ilike.%${safe}%,prof.ilike.%${safe}%,book.ilike.%${safe}%`)
-      .order("course")
-      .limit(50), "수업 검색 결과");
-    courses = (data ?? []) as Course[];
-    await track("search", { q: query, results: courses.length });
-  }
+  // 검색·최근 거래·학과 트리를 한꺼번에 조회 (순차 왕복 3번 → 1번)
+  const safe = query.replace(/[%,()]/g, " ");
+  const [courseRes, recentRes, tree] = await Promise.all([
+    query
+      ? supabase
+          .from("courses")
+          .select("id, term, major, course_code, course, prof, bunban, book, subbook, cover_url")
+          .or(`course.ilike.%${safe}%,prof.ilike.%${safe}%,book.ilike.%${safe}%`)
+          .order("course")
+          .limit(50)
+      : Promise.resolve(null),
+    supabase.from("listings_public").select("*").eq("status", "open").order("created_at", { ascending: false }).limit(12),
+    query ? loadMajorTree(supabase) : Promise.resolve(null),
+  ]);
 
-  const recent = must(await supabase
-    .from("listings_public")
-    .select("*")
-    .eq("status", "open")
-    .order("created_at", { ascending: false })
-    .limit(12), "최근 거래");
-  const listings = (recent ?? []) as ListingPublic[];
+  const courses = (courseRes ? (must(courseRes, "수업 검색 결과") ?? []) : []) as Course[];
+  if (query) after(() => track("search", { q: query, results: courses.length }));
+
+  const listings = (must(recentRes, "최근 거래") ?? []) as ListingPublic[];
 
   const grouped = new Map<string, Course[]>();
   for (const c of courses) grouped.set(c.course, [...(grouped.get(c.course) ?? []), c]);
 
   // 학과·트랙 이름도 같이 찾아준다 ("컴퓨터" → 컴퓨터공학부)
   let majorHits: ReturnType<typeof flattenMajors> = [];
-  if (query) {
+  if (query && tree) {
     const n = query.toLowerCase().replace(/\s+/g, "");
-    majorHits = flattenMajors(await loadMajorTree(supabase))
+    majorHits = flattenMajors(tree)
       .filter((m) => m.name.toLowerCase().replace(/\s+/g, "").includes(n))
       .sort((a, b) => (a.kind === b.kind ? a.name.localeCompare(b.name, "ko") : a.kind === "dept" ? -1 : 1))
       .slice(0, 6);

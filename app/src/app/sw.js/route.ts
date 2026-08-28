@@ -11,7 +11,30 @@ self.addEventListener("install", () => {
   // 대기 상태로 두고, 페이지가 SKIP_WAITING을 보낼 때만 활성화 (사용자가 '업데이트하기'를 누른 시점)
 });
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil((async () => {
+    // 이전 빌드의 정적 캐시는 정리
+    const keys = await caches.keys();
+    await Promise.all(keys.filter((k) => k.startsWith("bs-static-") && k !== CACHE).map((k) => caches.delete(k)));
+    await self.clients.claim();
+  })());
+});
+// 앱 셸 정적 자원 캐시: /_next/static(해시 이름 → 영구), /fonts·/icons(갱신되면 뒤에서 교체). HTML·API는 항상 네트워크.
+const CACHE = "bs-static-" + BUILD;
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  if (req.method !== "GET") return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+  const immutable = url.pathname.startsWith("/_next/static/");
+  const swr = url.pathname.startsWith("/fonts/") || url.pathname.startsWith("/icons/");
+  if (!immutable && !swr) return;
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    const hit = await cache.match(req);
+    const fetching = fetch(req).then((res) => { if (res.ok) cache.put(req, res.clone()); return res; }).catch(() => hit);
+    if (hit) { if (swr) void fetching.catch(() => {}); return hit; }
+    return fetching;
+  })());
 });
 // 푸시 수신 → 알림 표시 (OS 기본 알림음·진동). data.url로 이동
 self.addEventListener("push", (event) => {

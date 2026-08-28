@@ -12,10 +12,12 @@ function dayOf(iso: string) {
   return new Date(iso).toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "short" });
 }
 
+type Msg = ChatMessage & { pending?: boolean; failed?: boolean };
+
 export function ChatRoom({
   roomId, me, initial, counterpartRole, disabled = false,
 }: { roomId: string; me: string; initial: ChatMessage[]; counterpartRole: string; disabled?: boolean }) {
-  const [messages, setMessages] = useState<ChatMessage[]>(initial);
+  const [messages, setMessages] = useState<Msg[]>(initial);
   const [text, setText] = useState("");
   const [photo, setPhoto] = useState<{ file: File; url: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +40,8 @@ export function ChatRoom({
       .channel(`room:${roomId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `room_id=eq.${roomId}` }, (p: { new: ChatMessage }) => {
         const m = p.new as ChatMessage;
-        setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+        // 내가 보낸 게 서버 응답보다 먼저 도착하면 같은 내용의 임시 말풍선을 치운다
+        setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev.filter((x) => !(x.pending && x.sender_id === m.sender_id && x.body === m.body && !x.image_url === !m.image_url)), m]));
         if (m.sender_id !== me) void markRead(roomId);
       })
       .subscribe((status: string) => setLive(status === "SUBSCRIBED" ? "on" : status === "CLOSED" || status === "CHANNEL_ERROR" || status === "TIMED_OUT" ? "off" : "connecting"));
@@ -46,15 +49,15 @@ export function ChatRoom({
     return () => { cancelled = true; if (ch) void sb.removeChannel(ch); };
   }, [roomId, me]);
 
-  // 실시간이 끊겨도 놓치지 않게 15초마다 보충 조회
+  // 실시간이 끊기면 3초마다, 붙어 있어도 안전망으로 20초마다 보충 조회 (탭이 숨겨져 있으면 쉰다)
   useEffect(() => {
-    if (live === "on") return;
     const t = setInterval(async () => {
+      if (document.visibilityState !== "visible") return;
       const sb = supabaseBrowser();
-      const lastId = messages[messages.length - 1]?.id ?? 0;
+      const lastId = Math.max(0, ...messages.filter((m) => !m.pending).map((m) => m.id));
       const { data } = await sb.from("chat_messages").select("*").eq("room_id", roomId).gt("id", lastId).order("created_at");
       if (data?.length) setMessages((prev) => [...prev, ...(data as ChatMessage[]).filter((m) => !prev.some((x) => x.id === m.id))]);
-    }, 15000);
+    }, live === "on" ? 20000 : 3000);
     return () => clearInterval(t);
   }, [live, roomId, messages]);
 
@@ -83,10 +86,20 @@ export function ChatRoom({
     setText("");
     const sent = photo;
     setPhoto(null);
+    // 낙관적 표시: 서버 응답을 기다리지 않고 바로 말풍선을 그린다 (카톡처럼)
+    const tempId = -Date.now();
+    const temp: Msg = { id: tempId, room_id: roomId, sender_id: me, body: body || null, image_url: sent?.url ?? null, created_at: new Date().toISOString(), read_at: null, pending: true };
+    setMessages((prev) => [...prev, temp]);
     start(async () => {
       const r = await sendMessage(roomId, fd);
-      if (r.error) { setError(r.error); setText(body); if (sent) setPhoto(sent); return; }
-      if (r.message) setMessages((prev) => (prev.some((x) => x.id === r.message!.id) ? prev : [...prev, r.message!]));
+      if (r.error) {
+        setMessages((prev) => prev.filter((x) => x.id !== tempId));
+        setError(r.error); setText(body); if (sent) setPhoto(sent); return;
+      }
+      if (r.message) setMessages((prev) => {
+        const rest = prev.filter((x) => x.id !== tempId);
+        return rest.some((x) => x.id === r.message!.id) ? rest : [...rest, r.message!];
+      });
       if (sent) URL.revokeObjectURL(sent.url);
     });
   }
@@ -104,7 +117,7 @@ export function ChatRoom({
           return (
             <div key={m.id}>
               {showDay && <div className="my-3 text-center text-[11px] text-gray-3">{day}</div>}
-              <div className={`anim-fade-up flex items-end gap-1.5 ${mine ? "justify-end" : "justify-start"}`}>
+              <div className={`anim-fade-up flex items-end gap-1.5 ${mine ? "justify-end" : "justify-start"} ${m.pending ? "opacity-60" : ""}`}>
                 {mine && <span className="text-[10px] text-gray-3">{timeOf(m.created_at)}</span>}
                 <div className={`max-w-[78%] overflow-hidden rounded-2xl ${mine ? "rounded-br-md bg-blue text-white" : "rounded-bl-md bg-white text-ink shadow-[0_1px_2px_rgba(0,44,119,0.08)]"}`}>
                   {m.image_url && (
