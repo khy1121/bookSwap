@@ -50,14 +50,14 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
                 <>
                   <Link href="/chats" className={`${nav} group relative`} aria-label={unread ? `채팅, 안 읽음 ${unread}` : "채팅"}>
                     <span aria-hidden className="icon-[lucide--message-circle] size-4" />
-                    <span aria-hidden className={reveal}>채팅</span>
+                    <span aria-hidden className={`${reveal} hidden [@media(hover:hover)]:inline`}>채팅</span>
                     {unread > 0 && <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-blue px-1 text-center text-[10px] font-bold leading-4 text-white">{unread > 99 ? "99+" : unread}</span>}
                   </Link>
                   <Link href="/my" className={`${nav} group`} aria-label="내 거래"><span aria-hidden className="icon-[lucide--user] size-4" /><span aria-hidden className={reveal}>내 거래</span></Link>
                   <form action={signOut}>
                     <button className={`${nav} group`} aria-label="로그아웃">
                       <span aria-hidden className="icon-[lucide--log-out] size-4" />
-                      <span aria-hidden className={reveal}>로그아웃</span>
+                      <span aria-hidden className={`${reveal} hidden [@media(hover:hover)]:inline`}>로그아웃</span>
                     </button>
                   </form>
                 </>
