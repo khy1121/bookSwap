@@ -121,3 +121,5 @@ build 통: **3개** ✓
 - 한계: iOS는 설치한 PWA에서만(16.4+), 인앱 브라우저 불가, OS 배터리 정책으로 지연 가능. 알림음은 OS 기본음(커스텀 불가)
 
 - 2026-08-28: 웹 푸시 전체 경로 검증 완료 — chat_messages INSERT → pg_net 트리거 → /api/push/chat → web-push (e2e PASS, 3대 기기 수신). 트리거 SQL은 비밀값을 포함하므로 `app/supabase/_webhook_local_only.sql`로 gitignore.
+
+- 2026-08-28: Supabase를 서울 리전 새 프로젝트(qlabeqipcjqgbihnuppf)로 이전, Vercel 함수 리전 icn1. 한국→DB 쿼리 ~300ms → ~70ms.
