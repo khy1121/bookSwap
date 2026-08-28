@@ -222,7 +222,7 @@ export async function markDone(listingId: string) {
 }
 
 /** 클라이언트에서 오는 계측 이벤트. 허용 목록 밖은 무시 (임의 이벤트 주입 방지). */
-const CLIENT_EVENTS = new Set(["pwa_prompt_shown", "pwa_prompt_dismissed", "pwa_install_choice", "pwa_installed", "pwa_guide_shown", "app_update_prompted", "app_update_applied"]);
+const CLIENT_EVENTS = new Set(["pwa_prompt_shown", "pwa_prompt_dismissed", "pwa_install_choice", "pwa_installed", "pwa_guide_shown", "app_update_prompted", "app_update_applied", "push_permission", "push_clicked"]);
 export async function logEvent(event: string, props: Record<string, unknown> = {}) {
   if (!CLIENT_EVENTS.has(event)) return;
   await track(event, props);
