@@ -107,3 +107,4 @@ build 통: **3개** ✓
 - 모바일(<640px): 헤더는 로고+로그아웃만, **하단 탭바**(홈·학과·채팅·내 거래, 채팅 배지). 자체 하단 바가 있는 화면(과목·매물 상세, 등록/수정, 채팅방)에선 탭바 숨김
 - PWA는 레이아웃을 보정하지 않음 — safe-area는 `.bottom-bar`(env(safe-area-inset-bottom))가 처리. 서비스워커는 넣지 않음(오프라인 불필요, Chrome 설치엔 매니페스트만으로 충분)
 - 설치 안내(PR #23): `InstallPrompt` — Android는 beforeinstallprompt로 즉시 설치, iOS는 '공유→홈 화면에 추가' 3단계 시트, 인앱 브라우저(카톡·인스타·에타 앱)는 외부 브라우저로 열기 안내. standalone이면 미표시, 닫으면 7일 숨김. 이벤트: pwa_prompt_shown/dismissed, pwa_install_choice(outcome), pwa_installed, pwa_guide_shown. 미리보기 `?pwa=android|ios|inapp`
+- iOS PWA는 Safari와 쿠키를 공유하지 않아 로그아웃 상태로 열림(PR #24로 대응): 탭바를 항상 표시하고 로그아웃 시 '내 거래'→'로그인', 채팅 탭은 로그인으로 유도, 모바일 헤더에 로그인 링크. 설치 후 앱 안에서 Google 로그인 1회 필요
