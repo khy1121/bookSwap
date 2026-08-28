@@ -7,6 +7,7 @@ import { signOut } from "./actions";
 import { Toast } from "@/components/Toast";
 import { TabBar } from "@/components/TabBar";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { UpdateToast } from "@/components/UpdateToast";
 
 export const metadata: Metadata = {
   title: "BookSwap — 한성대 과목별 중고 교재",
@@ -103,6 +104,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <Toast />
           <InstallPrompt />
         </Suspense>
+        <UpdateToast />
         <TabBar unread={unread} loggedIn={!!user} />
       </body>
     </html>

@@ -90,7 +90,7 @@ body {
 .anim-fade-up { animation: fade-up 240ms cubic-bezier(.2,.7,.2,1) both; }
 .anim-sheet-up { animation: sheet-up 260ms cubic-bezier(.2,.7,.2,1) both; }
 .anim-fade-in { animation: fade-in 180ms ease-out both; }
-.anim-toast { animation: toast-in 220ms cubic-bezier(.2,.7,.2,1) both; }
+.anim-toast { animation: toast-in 220ms cubic-bezier(.2,.7,.2,1) both; } /* left-1/2와 함께 쓰고, 가로 중앙 정렬은 keyframe의 translate(-50%)가 담당 (Tailwind translate 클래스와 중복 금지) */
 .stagger > * { animation: fade-up 240ms cubic-bezier(.2,.7,.2,1) both; }
 .stagger > *:nth-child(2) { animation-delay: 30ms; }
 .stagger > *:nth-child(3) { animation-delay: 60ms; }
