@@ -10,15 +10,14 @@ import { Cover } from "@/components/Cover";
 export default async function ListingPage(props: PageProps<"/listings/[id]">) {
   const { id } = await props.params;
   const supabase = await createClient();
-  const { data: l } = await supabase.from("listings_public").select("*").eq("id", id).single<ListingPublic>();
+  // 매물·사용자·소유 확인을 한 번에 (listings 원본은 RLS로 본인 것만 보인다)
+  const [{ data: l }, user, { data: own }] = await Promise.all([
+    supabase.from("listings_public").select("*").eq("id", id).single<ListingPublic>(),
+    getUser(),
+    supabase.from("listings").select("user_id").eq("id", id).maybeSingle(),
+  ]);
   if (!l) notFound();
-
-  const user = await getUser();
-  let isOwner = false;
-  if (user) {
-    const { data: own } = await supabase.from("listings").select("user_id").eq("id", id).single();
-    isOwner = own?.user_id === user.id;
-  }
+  const isOwner = !!user && own?.user_id === user.id;
   const done = l.status === "done";
 
   return (

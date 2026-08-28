@@ -123,3 +123,5 @@ build 통: **3개** ✓
 - 2026-08-28: 웹 푸시 전체 경로 검증 완료 — chat_messages INSERT → pg_net 트리거 → /api/push/chat → web-push (e2e PASS, 3대 기기 수신). 트리거 SQL은 비밀값을 포함하므로 `app/supabase/_webhook_local_only.sql`로 gitignore.
 
 - 2026-08-28: Supabase를 서울 리전 새 프로젝트(qlabeqipcjqgbihnuppf)로 이전, Vercel 함수 리전 icn1. 한국→DB 쿼리 ~300ms → ~70ms.
+
+- 2026-08-28: 속도 작업 — getUser/createClient 요청당 캐시, 홈·채팅방·매물 상세 쿼리 병렬화, sendMessage 검사 병렬화 + track은 after(), 채팅 낙관적 전송(임시 말풍선) + 폴링 3초(연결 시 20초 안전망), SW가 /_next/static·fonts·icons 캐시.

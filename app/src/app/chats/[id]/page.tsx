@@ -10,17 +10,22 @@ import type { ChatMessage } from "../actions";
 
 export default async function ChatRoomPage(props: PageProps<"/chats/[id]">) {
   const { id } = await props.params;
-  const user = await getUser();
-  if (!user) redirect(`/login?next=/chats/${id}`);
   const supabase = await createClient();
-
-  const { data: room } = await supabase.from("chat_rooms").select("id, listing_id, buyer_id, seller_id").eq("id", id).maybeSingle();
+  // 사용자 확인과 방 조회를 동시에 (RLS가 참여자만 통과시킨다)
+  const [user, { data: room }] = await Promise.all([
+    getUser(),
+    supabase.from("chat_rooms").select("id, listing_id, buyer_id, seller_id").eq("id", id).maybeSingle(),
+  ]);
+  if (!user) redirect(`/login?next=/chats/${id}`);
   if (!room) notFound();
 
-  const { data: l } = await supabase.from("listings_public").select("id, book_title, kind, status, price, course, prof, cover_url, photos").eq("id", room.listing_id).single();
-  const messages = (must(await supabase.from("chat_messages").select("*").eq("room_id", id).order("created_at").limit(200), "메시지") ?? []) as ChatMessage[];
-  // 읽음 처리: 렌더 중이라 revalidatePath는 못 쓰고 DB만 갱신 (목록 배지는 다음 요청에 반영)
-  await supabase.from("chat_messages").update({ read_at: new Date().toISOString() }).eq("room_id", id).neq("sender_id", user.id).is("read_at", null);
+  // 매물·메시지·읽음 처리도 동시에. 읽음 처리는 렌더 중이라 revalidatePath 없이 DB만 갱신
+  const [{ data: l }, msgRes] = await Promise.all([
+    supabase.from("listings_public").select("id, book_title, kind, status, price, course, prof, cover_url, photos").eq("id", room.listing_id).single(),
+    supabase.from("chat_messages").select("*").eq("room_id", id).order("created_at").limit(200),
+    supabase.from("chat_messages").update({ read_at: new Date().toISOString() }).eq("room_id", id).neq("sender_id", user.id).is("read_at", null),
+  ]);
+  const messages = (must(msgRes, "메시지") ?? []) as ChatMessage[];
 
   const iAmBuyer = room.buyer_id === user.id;
   const counterpartRole = iAmBuyer ? "판매자" : "구매자";
